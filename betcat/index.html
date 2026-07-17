@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>betcat · radar de odds</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF6F3; --card:#FFFFFF; --ink:#221418; --muted:#77626A;
+  --wine:#7A1E33; --wine-deep:#571223; --wine-soft:#F6E7EB; --wine-line:#E9CDD5;
+  --gold:#9C7A2E; --gold-soft:#F5EDDB;
+  --gain:#276B4F; --gain-soft:#E1EFE8; --loss:#B54225; --loss-soft:#F9E6DF;
+  --line:#E8DCDA; --field:#FDFBFA; --hover:#F7F0EE; --track:#F0E6E4;
+  --live:#2E9E63; --soon:#D98A2B; --done:#C0392B;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+[data-theme="escuro"]{
+  --bg:#14100D; --card:#1E1712; --ink:#F3EAE0; --muted:#A8948B;
+  --wine:#D4738A; --wine-deep:#E794A6; --wine-soft:#31211F; --wine-line:#4B322F;
+  --gold:#D3AC64; --gold-soft:#322A1B;
+  --gain:#5FC493; --gain-soft:#1D2F26; --loss:#F08263; --loss-soft:#38221C;
+  --line:#382C25; --field:#281F19; --hover:#2B221C; --track:#332921;
+  --live:#4FCB8B; --soon:#E8A34C; --done:#E96A50;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;font-size:14.5px;line-height:1.5;padding-bottom:70px;transition:background .25s,color .25s}
+h1,h2,h3,h4{font-family:'Fraunces',serif;letter-spacing:-.01em}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+button{cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;border:none;border-radius:10px}
+input,select{padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--field);font-size:13.5px;color:var(--ink);font-family:'Inter',sans-serif}
+input[type=number]{font-family:var(--mono)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--wine);outline-offset:1px}
+label{font-size:11.5px;font-weight:600;display:block;margin-bottom:4px}
+label small{display:block;font-weight:400;color:var(--muted);font-size:10.5px;line-height:1.4}
+
+/* header */
+header{border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:30}
+.hd{display:flex;align-items:center;justify-content:space-between;padding:10px 0;gap:10px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px}
+.logo svg{width:38px;height:38px}
+.logo h1{font-size:21px;font-weight:700;letter-spacing:-.02em}
+.logo h1 b{color:var(--wine)}
+.logo span{display:block;font-size:10.5px;color:var(--muted);font-family:'Inter',sans-serif;font-weight:500;margin-top:-3px}
+.hd-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.req-counter{font-family:var(--mono);font-size:12px;background:var(--field);border:1px solid var(--line);border-radius:20px;padding:6px 12px;display:flex;align-items:center;gap:6px}
+.req-counter .ok{color:var(--gain)} .req-counter .warn{color:var(--soon)} .req-counter .bad{color:var(--loss)}
+.icon-btn{background:var(--field);border:1px solid var(--line);color:var(--ink);width:36px;height:36px;border-radius:10px;font-size:16px;display:grid;place-items:center}
+.icon-btn:hover{border-color:var(--wine);color:var(--wine)}
+.upd-btn{background:var(--wine);color:#FDF6EE;padding:8px 14px;font-size:12.5px;border-radius:10px}
+[data-theme="escuro"] .upd-btn{color:#1D1216}
+.upd-btn:hover{filter:brightness(1.1)}
+.upd-btn:disabled{opacity:.5;cursor:wait}
+
+/* boxes */
+.box{background:var(--card);border:1.5px solid var(--line);border-radius:14px;margin-top:18px;overflow:hidden}
+.box-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;gap:10px}
+.box-hd h2{font-size:16.5px}
+.box-hd .caret{background:none;color:var(--muted);font-size:13px;padding:4px 8px}
+.box-bd{padding:0 16px 16px}
+.box.ativa-box{border-color:var(--wine-line)}
+.sel-grid{display:grid;grid-template-columns:1fr 1fr 2fr;gap:12px}
+@media(max-width:720px){.sel-grid{grid-template-columns:1fr}}
+select{width:100%}
+
+/* tabela do evento */
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:left;padding:7px 9px;border-bottom:1.5px solid var(--line)}
+td{padding:8px 9px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:none}
+.ev-table{margin-top:14px;border:1px dashed var(--wine-line);border-radius:10px;overflow:hidden}
+.chk{width:17px;height:17px;accent-color:var(--wine);cursor:pointer}
+
+/* lista ativa */
+.item{border:1px solid var(--line);border-radius:12px;margin-bottom:10px;background:var(--field);overflow:hidden}
+.item-hd{display:flex;align-items:center;gap:10px;padding:11px 12px;flex-wrap:wrap}
+.item-hd .clic{flex:1;min-width:200px;cursor:pointer;display:flex;align-items:center;gap:10px}
+.dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px color-mix(in srgb, currentColor 18%, transparent)}
+.dot.soon{background:var(--soon);color:var(--soon)}
+.dot.live{background:var(--live);color:var(--live);animation:pulse 1.6s infinite}
+.dot.done{background:var(--done);color:var(--done)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.dot.live{animation:none}}
+.item-title{font-weight:600;font-size:14px}
+.item-meta{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.item-meta b{color:var(--ink)}
+.item-tools{display:flex;align-items:center;gap:6px}
+.mini-btn{background:var(--card);border:1px solid var(--line);width:32px;height:32px;border-radius:9px;font-size:14px;display:grid;place-items:center;color:var(--ink)}
+.mini-btn:hover{border-color:var(--gold);color:var(--gold)}
+.mini-btn.lamp:hover{border-color:var(--gold)}
+.notif-wrap{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.sub{border-top:1px dashed var(--line)}
+.sub-hd{width:100%;text-align:left;background:none;color:var(--muted);font-size:11.5px;padding:8px 12px;font-family:var(--mono)}
+.sub-hd:hover{color:var(--wine)}
+.sub-bd{padding:4px 14px 12px;display:none}
+.mkt{margin-top:8px}
+.mkt h5{font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;color:var(--gold);margin-bottom:4px}
+.odd-chips{display:flex;flex-wrap:wrap;gap:5px}
+.odd-chip{font-family:var(--mono);font-size:11.5px;background:var(--card);border:1px solid var(--line);border-radius:7px;padding:3px 8px}
+.odd-chip b{color:var(--wine)}
+.mkt .upd{font-size:9.5px;color:var(--muted);font-family:var(--mono);margin-top:3px}
+.vazio{color:var(--muted);font-size:12.5px;padding:8px 0}
+
+/* modais */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,8,10,.55);z-index:50;padding:20px;overflow-y:auto}
+.overlay.aberto{display:flex;align-items:flex-start;justify-content:center}
+.modal{background:var(--card);border:1px solid var(--line);border-radius:16px;max-width:640px;width:100%;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;padding:15px 18px;border-bottom:1px solid var(--line)}
+.modal-hd h3{font-size:17px}
+.modal-x{background:none;font-size:20px;color:var(--muted);padding:2px 8px}
+.modal-x:hover{color:var(--loss)}
+.modal-bd{padding:16px 18px;max-height:72vh;overflow-y:auto}
+.modal-ft{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end}
+.btn-sec{background:var(--field);border:1px solid var(--line);color:var(--ink);padding:9px 16px;font-size:13px}
+.btn-pri{background:var(--wine);color:#FDF6EE;padding:9px 18px;font-size:13px}
+[data-theme="escuro"] .btn-pri{color:#1D1216}
+.cfg-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+@media(max-width:560px){.cfg-row{grid-template-columns:1fr}}
+.slider-wrap{display:flex;align-items:center;gap:10px}
+.slider-wrap input[type=range]{flex:1;accent-color:var(--wine)}
+.slider-wrap input[type=number]{width:64px}
+.switch{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;cursor:pointer}
+.mkt-cats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+@media(max-width:520px){.mkt-cats{grid-template-columns:1fr}}
+.cat-chk{display:flex;align-items:center;gap:8px;border:1px dashed var(--line);border-radius:9px;padding:8px 10px;font-size:13px;cursor:pointer}
+.cat-chk:hover{border-color:var(--wine)}
+
+/* dicas */
+.stake-bar{display:flex;gap:10px;align-items:end;margin-bottom:14px;flex-wrap:wrap}
+.stake-bar>div{flex:1;min-width:140px}
+.dica{border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:12px;background:var(--field)}
+.dica h4{font-size:13.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-family:'Inter',sans-serif}
+.badge{font-family:var(--mono);font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:12px}
+.badge.arb{background:var(--gain-soft);color:var(--gain)}
+.badge.hedge{background:var(--gold-soft);color:var(--gold)}
+.badge.cob{background:var(--wine-soft);color:var(--wine)}
+.dica p.expl{font-size:12px;color:var(--muted);margin:5px 0 8px;line-height:1.55}
+.dica table{font-size:12px}
+.dica td{font-family:var(--mono);padding:5px 8px}
+.dica td.t{font-family:'Inter',sans-serif}
+.pos{color:var(--gain);font-weight:600} .neg{color:var(--loss);font-weight:600} .neu{color:var(--muted)}
+.margem{font-size:10.5px;color:var(--muted);font-family:var(--mono);margin-top:6px}
+.err{margin-top:10px;background:var(--loss-soft);color:var(--loss);border-radius:9px;padding:9px 12px;font-size:12.5px;font-weight:500;display:none}
+.info{margin-top:10px;background:var(--gold-soft);color:var(--gold);border-radius:9px;padding:9px 12px;font-size:12.5px;display:none}
+.rodape{margin-top:36px;font-size:11.5px;color:var(--muted);line-height:1.65;border-top:1px solid var(--line);padding-top:14px}
+.spin{display:inline-block;animation:rot 1s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+
+/* tabela do evento vira cartão empilhado no celular (nada cortado) */
+@media(max-width:640px){
+  .ev-table table,.ev-table tbody,.ev-table tr,.ev-table td{display:block;width:100%}
+  .ev-table thead,.ev-table tr:first-child{display:none}
+  .ev-table td{border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 12px}
+  .ev-table td:last-child{border-bottom:none}
+  .ev-table td::before{content:attr(data-l);font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);flex-shrink:0}
+  .ev-table td>span,.ev-table td>b{text-align:right}
+}
+
+/* portão de acesso */
+.gate{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.gate-card{background:var(--card);border:1.5px solid var(--wine-line);border-radius:18px;padding:30px 26px;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.gate-card svg{width:72px;height:72px;margin-bottom:8px}
+.gate-card h2{font-size:26px;margin-bottom:4px}
+.gate-card h2 b{color:var(--wine)}
+.gate-card p{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+.gate-card input{width:100%;text-align:center;font-size:15px;margin-bottom:10px;padding:11px}
+.gate-card button{width:100%;background:var(--wine);color:#FDF6EE;padding:11px;font-size:14px}
+[data-theme="escuro"] .gate-card button{color:#1D1216}
+.gate-card button:hover{filter:brightness(1.1)}
+.gate-err{color:var(--loss);font-size:12.5px;font-weight:600;margin-top:10px;min-height:16px;animation:none}
+.gate-err.treme{animation:treme .35s}
+@keyframes treme{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+</style>
+</head>
+<body>
+
+<!-- PORTÃO DE ACESSO -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <polygon points="11,26 15,7 28,17" fill="#171013" stroke="#9C7A2E" stroke-width="1.4"/>
+      <polygon points="53,26 49,7 36,17" fill="#171013" stroke="#9C7A2E" stroke-width="1.4"/>
+      <path d="M32 12 C16 12 8 24 9 37 C10 50 20 58 32 58 C44 58 54 50 55 37 C56 24 48 12 32 12 Z" fill="#171013" stroke="#9C7A2E" stroke-width="1.6"/>
+      <path d="M18 33 L27 30 L26 36 L19 37 Z" fill="#D3AC64"/>
+      <path d="M46 33 L37 30 L38 36 L45 37 Z" fill="#D3AC64"/>
+      <circle cx="23.5" cy="33.6" r="1.6" fill="#171013"/>
+      <circle cx="40.5" cy="33.6" r="1.6" fill="#171013"/>
+      <polygon points="32,42 28.5,46.5 35.5,46.5" fill="#7A1E33"/>
+      <path d="M32 46.5 L32 50 M32 50 C29 53 25 52.6 24 51 M32 50 C35 53 39 52.6 40 51" stroke="#9C7A2E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <h2>bet<b>cat</b></h2>
+    <p>Acesso restrito. Digite a senha para liberar o radar.</p>
+    <input type="password" id="gateSenha" placeholder="senha" autocomplete="off" onkeydown="if(event.key==='Enter')liberarAcesso()">
+    <button onclick="liberarAcesso()">Entrar</button>
+    <div class="gate-err" id="gateErr"></div>
+  </div>
+</div>
+
+<header>
+  <div class="wrap hd">
+    <div class="logo">
+      <svg id="logoSvg" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="betcat">
+        <polygon points="11,26 15,7 28,17" fill="#171013" stroke="#9C7A2E" stroke-width="1.4"/>
+        <polygon points="53,26 49,7 36,17" fill="#171013" stroke="#9C7A2E" stroke-width="1.4"/>
+        <path d="M32 12 C16 12 8 24 9 37 C10 50 20 58 32 58 C44 58 54 50 55 37 C56 24 48 12 32 12 Z" fill="#171013" stroke="#9C7A2E" stroke-width="1.6"/>
+        <path d="M18 33 L27 30 L26 36 L19 37 Z" fill="#D3AC64"/>
+        <path d="M46 33 L37 30 L38 36 L45 37 Z" fill="#D3AC64"/>
+        <circle cx="23.5" cy="33.6" r="1.6" fill="#171013"/>
+        <circle cx="40.5" cy="33.6" r="1.6" fill="#171013"/>
+        <polygon points="32,42 28.5,46.5 35.5,46.5" fill="#7A1E33"/>
+        <path d="M32 46.5 L32 50 M32 50 C29 53 25 52.6 24 51 M32 50 C35 53 39 52.6 40 51" stroke="#9C7A2E" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <circle cx="17" cy="45" r="1" fill="#3A2A20"/><circle cx="20" cy="48.5" r="1" fill="#3A2A20"/>
+        <circle cx="47" cy="45" r="1" fill="#3A2A20"/><circle cx="44" cy="48.5" r="1" fill="#3A2A20"/>
+      </svg>
+      <div>
+        <h1>bet<b>cat</b></h1>
+        <span>radar de odds · powered by odds-api.io</span>
+      </div>
+    </div>
+    <div class="hd-right">
+      <div class="req-counter" title="Requisições à API na última hora">⚡ <span id="reqCount">0</span><span style="color:var(--muted)">/100 req·h</span></div>
+      <button class="upd-btn" id="btnForcar" onclick="forcarAtualizacao()">⟳ Forçar atualização</button>
+      <button class="icon-btn" onclick="abrirConfig()" title="Configurações" aria-label="Configurações">⚙</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- BOX DE SELEÇÃO -->
+  <div class="box" id="boxSel">
+    <div class="box-hd">
+      <h2>Selecionar evento</h2>
+      <button class="caret" onclick="toggleSelBox()" id="selCaret">▲ recolher</button>
+    </div>
+    <div class="box-bd" id="selBd">
+      <div class="sel-grid">
+        <div>
+          <label for="ddEsporte">Esporte</label>
+          <select id="ddEsporte" onchange="aoTrocarEsporte()"><option value="">— carregando… —</option></select>
+        </div>
+        <div>
+          <label for="ddLiga">Liga <small>filtra a lista de eventos</small></label>
+          <select id="ddLiga" onchange="renderEventosDrop()"><option value="">Todas</option></select>
+        </div>
+        <div>
+          <label for="ddEvento">Evento <small>próximos 14 dias</small></label>
+          <select id="ddEvento" onchange="aoTrocarEvento()"><option value="">— selecione um esporte —</option></select>
+        </div>
+      </div>
+      <div id="evTabela"></div>
+      <div class="err" id="selErr"></div>
+      <div class="info" id="selInfo"></div>
+    </div>
+  </div>
+
+  <!-- LISTA ATIVA -->
+  <div class="box ativa-box">
+    <div class="box-hd"><h2>Lista ativa <span style="font-family:var(--mono);font-size:12px;color:var(--muted)" id="ativaCount"></span></h2></div>
+    <div class="box-bd">
+      <div id="listaAtiva"></div>
+      <div class="vazio" id="ativaVazio">Nenhum evento acompanhado. Selecione um evento acima e marque a caixa para adicioná-lo aqui.</div>
+    </div>
+  </div>
+
+  <div class="rodape">
+    <b>betcat</b> consulta odds reais via odds-api.io e guarda tudo neste navegador (cache local de até 5&nbsp;MB): configurações, eventos acompanhados, mercados selecionados e as últimas odds — você pode fechar e voltar sem perder nada. As sugestões da lâmpada são puramente matemáticas (dutching, cobertura, arbitragem e middles calculados sobre as odds vigentes) e não constituem aconselhamento financeiro; odds mudam a qualquer momento e a execução pode diferir do cálculo. Aposte com responsabilidade, apenas o que pode perder. Proibido para menores de 18 anos.
+  </div>
+</div>
+
+<!-- MODAL CONFIGURAÇÕES -->
+<div class="overlay" id="ovConfig">
+  <div class="modal">
+    <div class="modal-hd"><h3>⚙ Configurações</h3><button class="modal-x" onclick="fecharConfig()">×</button></div>
+    <div class="modal-bd">
+      <div class="cfg-row">
+        <div style="grid-column:1/-1">
+          <label for="cfgKey">Chave da API (odds-api.io) <small>crie grátis em odds-api.io — sem a chave o betcat não consegue buscar eventos nem odds</small></label>
+          <input type="text" id="cfgKey" style="width:100%" placeholder="cole sua apiKey aqui">
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div>
+          <label>Intervalo entre atualizações <small>tempo mínimo entre requisições do mesmo dado (padrão 10 min ≈ <span id="cfgReqHora">6</span> consultas/hora por recurso)</small></label>
+          <div class="slider-wrap">
+            <input type="range" id="cfgIntervalo" min="1" max="60" step="1" value="10" oninput="syncIntervalo(this.value)">
+            <input type="number" id="cfgIntervaloTxt" min="1" max="60" value="10" oninput="syncIntervalo(this.value)"> <span style="font-size:12px;color:var(--muted)">min</span>
+          </div>
+        </div>
+        <div>
+          <label for="cfgBookie">Casa de apostas <small>as odds exibidas e as sugestões usam esta casa</small></label>
+          <select id="cfgBookie"><option value="">— carregando… —</option></select>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div>
+          <label>Aparência</label>
+          <label class="switch"><input type="checkbox" class="chk" id="cfgTema"> Modo noturno</label>
+        </div>
+        <div>
+          <label>Notificações <small>avisa no navegador quando as odds dos eventos com 🔔 marcado mudarem (verificação a cada intervalo configurado)</small></label>
+          <label class="switch"><input type="checkbox" class="chk" id="cfgNotif"> Ativar notificações</label>
+        </div>
+      </div>
+      <div class="cfg-row">
+        <div>
+          <button class="btn-sec" style="color:var(--loss);border-color:var(--loss)" onclick="limparCache()">🗑 Limpar cache</button>
+        </div>
+        <div>
+          <button class="btn-sec" onclick="testarNotif()">🔔 Testar notificação</button>
+        </div>
+      </div>
+      <div class="info" id="cfgDiag" style="line-height:1.6"></div>
+      <div class="err" id="cfgErr"></div>
+    </div>
+    <div class="modal-ft"><button class="btn-pri" onclick="salvarConfig()">Salvar e fechar</button></div>
+  </div>
+</div>
+
+<!-- MODAL MERCADOS -->
+<div class="overlay" id="ovMercados">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="mercTitulo">Mercados acompanhados</h3><button class="modal-x" onclick="fecharMercados(false)">×</button></div>
+    <div class="modal-bd">
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px">Marque os mercados que o betcat deve acompanhar neste evento. Ao salvar, as odds são buscadas na casa selecionada (respeitando o intervalo de cache para não gastar requisições à toa).</p>
+      <div class="mkt-cats" id="mercCats"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn-sec" onclick="fecharMercados(false)">Fechar sem salvar</button>
+      <button class="btn-pri" onclick="fecharMercados(true)">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL SUGESTÕES (LÂMPADA) -->
+<div class="overlay" id="ovDicas">
+  <div class="modal" style="max-width:720px">
+    <div class="modal-hd"><h3 id="dicasTitulo">💡 Sugestões de aposta</h3><button class="modal-x" onclick="fecharDicas()">×</button></div>
+    <div class="modal-bd">
+      <div class="stake-bar">
+        <div>
+          <label for="dicaStake">Valor total a distribuir (R$)</label>
+          <input type="number" id="dicaStake" min="1" step="1" value="100" style="width:100%">
+        </div>
+        <button class="btn-pri" onclick="calcularDicas()">Calcular</button>
+      </div>
+      <div class="err" id="dicasErr"></div>
+      <div id="dicasCorpo"><p class="vazio">Informe o valor e clique em Calcular. As sugestões usam apenas os mercados que você selecionou para este evento.</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ============================================================
+   betcat — utilidades
+============================================================ */
+const $=id=>document.getElementById(id);
+const API='https://api.odds-api.io/v3';
+const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:NaN;};
+const fBRL=v=>(v<-1e-9?'−':'')+'R$ '+Math.abs(v).toFixed(2);
+const clsV=v=>v>1e-9?'pos':(v<-1e-9?'neg':'neu');
+const escH=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const agora=()=>Date.now();
+
+/* ============================================================
+   acesso restrito — senha tokenizada (SHA-256, nada em texto puro)
+============================================================ */
+function sha256hex(ascii){
+  function rr(v,a){return (v>>>a)|(v<<(32-a));}
+  var maxWord=Math.pow(2,32), result='', words=[], asciiBitLength=ascii.length*8;
+  var hash=[], k=[], primeCounter=0, isComposite={};
+  for(var candidate=2; primeCounter<64; candidate++){
+    if(!isComposite[candidate]){
+      for(var i=0;i<313;i+=candidate) isComposite[i]=candidate;
+      hash[primeCounter]=(Math.pow(candidate,.5)*maxWord)|0;
+      k[primeCounter++]=(Math.pow(candidate,1/3)*maxWord)|0;
+    }
+  }
+  ascii+='\x80';
+  while(ascii.length%64-56) ascii+='\x00';
+  for(i=0;i<ascii.length;i++){
+    var j=ascii.charCodeAt(i);
+    if(j>>8) return '';
+    words[i>>2]|=j<<((3-i)%4*8);
+  }
+  words[words.length]=(asciiBitLength/maxWord)|0;
+  words[words.length]=asciiBitLength;
+  for(j=0;j<words.length;){
+    var w=words.slice(j,j+=16), oldHash=hash;
+    hash=hash.slice(0,8);
+    for(i=0;i<64;i++){
+      var w15=w[i-15],w2=w[i-2];
+      var a=hash[0],e=hash[4];
+      var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]
+        +(w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);
+      var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));
+      hash=[(t1+t2)|0].concat(hash);
+      hash[4]=(hash[4]+t1)|0;
+    }
+    for(i=0;i<8;i++) hash[i]=(hash[i]+oldHash[i])|0;
+  }
+  for(i=0;i<8;i++){
+    for(j=3;j+1;j--){
+      var b=(hash[i]>>(j*8))&255;
+      result+=((b<16)?0:'')+b.toString(16);
+    }
+  }
+  return result;
+}
+const AUTHKEY='betcat_auth';
+const TOKEN='f553f84d8ae8a5666235f26a477d20a4ce6818de238c1cd8a84fffa173193973';
+function jaAutenticado(){
+  try{ return localStorage.getItem(AUTHKEY)===TOKEN; }
+  catch(e){ return memFallback[AUTHKEY]===TOKEN; }
+}
+function liberarAcesso(){
+  const tent=($('gateSenha').value||'').trim();
+  if(sha256hex(tent)===TOKEN){
+    try{ localStorage.setItem(AUTHKEY,TOKEN); }catch(e){ memFallback[AUTHKEY]=TOKEN; }
+    $('gate').style.display='none';
+    bootBetcat();
+  } else {
+    const e=$('gateErr'); e.textContent='Senha incorreta.'; $('gateSenha').value='';
+    e.classList.remove('treme'); void e.offsetWidth; e.classList.add('treme');
+  }
+}
+
+/* favicon = mesmo jaguar do header (o data-URI também vira ícone das notificações) */
+let ICONE='';
+(function(){ try{
+  const svg=new XMLSerializer().serializeToString($('logoSvg'));
+  ICONE='data:image/svg+xml,'+encodeURIComponent(svg);
+  const l=document.createElement('link'); l.rel='icon';
+  l.href=ICONE;
+  document.head.appendChild(l);
+}catch(e){} })();
+
+/* ============================================================
+   estado + cache local (salva TUDO)
+============================================================ */
+const KEY='betcat_v1';
+let S={
+  tema:'escuro', apiKey:'', bookie:'', intervaloMin:10, notif:false,
+  reqLog:[],
+  ui:{selOpen:true, esporte:'', liga:'', evento:''},
+  ativa:[],            /* {id,esporte,home,away,date,league,cats:[],notify,subOpen} */
+  db:{ sports:null, sportsTs:0, bookies:null, bookiesTs:0,
+       eventos:{},    /* esporte -> {ts,lista:[{id,home,away,date,league}]} */
+       odds:{} },     /* eventId -> {ts,data} */
+  sig:{}               /* eventId -> assinatura p/ detectar mudança de odds */
+};
+const memFallback={};
+function persistir(){
+  try{ localStorage.setItem(KEY,JSON.stringify(S)); }
+  catch(e){
+    /* estourou os 5MB? poda odds órfãs e listas de eventos antigas e tenta de novo */
+    try{ podarCache(true); localStorage.setItem(KEY,JSON.stringify(S)); }
+    catch(e2){ memFallback[KEY]=JSON.stringify(S); }
+  }
+}
+function carregarEstado(){
+  let raw=null;
+  try{ raw=localStorage.getItem(KEY); }catch(e){ raw=memFallback[KEY]||null; }
+  if(raw){ try{ const p=JSON.parse(raw); if(p&&typeof p==='object') S={...S,...p, ui:{...S.ui,...(p.ui||{})}, db:{...S.db,...(p.db||{})}}; }catch(e){} }
+}
+function podarCache(agressivo){
+  const ids=new Set(S.ativa.map(a=>String(a.id)));
+  for(const k of Object.keys(S.db.odds)) if(!ids.has(String(k))) delete S.db.odds[k];
+  if(agressivo){
+    const manter=S.ui.esporte;
+    for(const k of Object.keys(S.db.eventos)) if(k!==manter) delete S.db.eventos[k];
+  }
+}
+function limparCache(){
+  if(!confirm('Apagar TODOS os dados salvos (configurações, lista ativa, odds em cache)?\n\nA senha de acesso será mantida — você não precisará digitá-la de novo.')) return;
+  try{ localStorage.removeItem(KEY); }catch(e){} /* AUTHKEY fica intacta de propósito */
+  location.reload();
+}
+
+/* ============================================================
+   contador de requisições
+============================================================ */
+function logReq(){ S.reqLog.push(agora()); podarReqLog(); persistir(); renderContador(); }
+function podarReqLog(){ const h=agora()-3600e3; S.reqLog=S.reqLog.filter(t=>t>h); }
+function renderContador(){
+  podarReqLog();
+  const n=S.reqLog.length, el=$('reqCount');
+  el.textContent=n;
+  el.className = n<60?'ok':(n<90?'warn':'bad');
+}
+async function apiGet(path,params={},contarSemChave=true){
+  const u=new URL(API+path);
+  for(const [k,v] of Object.entries(params)) if(v!==undefined&&v!=='') u.searchParams.set(k,v);
+  if(S.apiKey) u.searchParams.set('apiKey',S.apiKey);
+  if(contarSemChave||S.apiKey) logReq();
+  const r=await fetch(u.toString());
+  if(!r.ok){
+    let msg='HTTP '+r.status;
+    try{ const j=await r.json(); if(j&&(j.message||j.error)) msg+=' — '+(j.message||j.error); }catch(e){}
+    throw new Error(msg);
+  }
+  return r.json();
+}
+const ttlMs=()=>Math.max(1,S.intervaloMin)*60e3;
+
+/* ============================================================
+   catálogos: esportes e casas (cache 24h)
+============================================================ */
+async function garantirCatalogos(force){
+  const dia=24*3600e3;
+  try{
+    if(force||!S.db.sports||agora()-S.db.sportsTs>dia){
+      const d=await apiGet('/sports');
+      S.db.sports=(Array.isArray(d)?d:d.sports||[]).map(x=>typeof x==='string'?{slug:x,name:x}:{slug:x.slug||x.key||x.name,name:x.name||x.slug||x.key});
+      S.db.sportsTs=agora();
+    }
+    if(force||!S.db.bookies||agora()-S.db.bookiesTs>dia){
+      const d=await apiGet('/bookmakers');
+      S.db.bookies=(Array.isArray(d)?d:d.bookmakers||[]).map(x=>typeof x==='string'?x:(x.name||x.slug||x.key)).filter(Boolean);
+      S.db.bookiesTs=agora();
+    }
+    persistir();
+  }catch(e){ mostrarSelErr('Falha ao carregar catálogos: '+e.message); }
+  renderEsportes(); renderBookies();
+}
+function renderEsportes(){
+  const dd=$('ddEsporte');
+  if(!S.db.sports||!S.db.sports.length){ dd.innerHTML='<option value="">— sem dados (verifique a conexão) —</option>'; return; }
+  dd.innerHTML='<option value="">— selecione —</option>'+S.db.sports.map(s=>`<option value="${escH(s.slug)}">${escH(s.name)}</option>`).join('');
+  if(S.ui.esporte) dd.value=S.ui.esporte;
+}
+function renderBookies(){
+  const dd=$('cfgBookie');
+  if(!S.db.bookies||!S.db.bookies.length){ dd.innerHTML='<option value="">— sem dados —</option>'; return; }
+  dd.innerHTML=S.db.bookies.map(b=>`<option value="${escH(b)}">${escH(b)}</option>`).join('');
+  if(S.bookie&&S.db.bookies.includes(S.bookie)) dd.value=S.bookie;
+  else{ const pref=S.db.bookies.find(b=>/betano/i.test(b))||S.db.bookies.find(b=>/bet365/i.test(b))||S.db.bookies[0]; dd.value=pref; }
+}
+
+/* ============================================================
+   eventos por esporte
+============================================================ */
+function extraiEv(e){
+  return {
+    id:e.id??e.eventId??e.fixtureId,
+    home:e.home??e.homeTeam??(e.participants&&e.participants[0]&&(e.participants[0].name||e.participants[0]))??'Casa',
+    away:e.away??e.awayTeam??(e.participants&&e.participants[1]&&(e.participants[1].name||e.participants[1]))??'Fora',
+    date:e.date??e.startTime??e.commenceTime??e.start??null,
+    league:(e.league&&(e.league.name||e.league))||e.leagueName||e.tournament||''
+  };
+}
+async function garantirEventos(esporte,force){
+  if(!esporte) return;
+  const c=S.db.eventos[esporte];
+  if(!force&&c&&agora()-c.ts<ttlMs()) return;
+  if(!S.apiKey){ mostrarSelInfo('Configure sua chave da API (⚙) para listar eventos.'); abrirConfig(); return; }
+  try{
+    mostrarSelInfo('Buscando eventos…');
+    const d=await apiGet('/events',{sport:esporte});
+    const lista=(Array.isArray(d)?d:d.events||d.data||[]).map(extraiEv).filter(e=>e.id!=null).slice(0,800);
+    S.db.eventos[esporte]={ts:agora(),lista};
+    persistir(); mostrarSelInfo('');
+  }catch(e){ mostrarSelErr('Falha ao buscar eventos: '+e.message); }
+}
+function mostrarSelErr(m){ const el=$('selErr'); el.textContent=m; el.style.display=m?'block':'none'; if(m) mostrarSelInfo(''); }
+function mostrarSelInfo(m){ const el=$('selInfo'); el.textContent=m; el.style.display=m?'block':'none'; if(m) mostrarSelErr(''); }
+
+function aoTrocarEsporte(){
+  S.ui.esporte=$('ddEsporte').value; S.ui.liga=''; S.ui.evento='';
+  persistir();
+  garantirEventos(S.ui.esporte).then(()=>{ renderLigas(); renderEventosDrop(); renderTabelaEvento(); persistir(); });
+  renderLigas(); renderEventosDrop(); renderTabelaEvento();
+}
+function eventosDoEsporte(){ const c=S.db.eventos[S.ui.esporte]; return c?c.lista:[]; }
+function renderLigas(){
+  const dd=$('ddLiga'); const ligas=[...new Set(eventosDoEsporte().map(e=>e.league).filter(Boolean))].sort();
+  dd.innerHTML='<option value="">Todas</option>'+ligas.map(l=>`<option value="${escH(l)}">${escH(l)}</option>`).join('');
+  if(S.ui.liga) dd.value=S.ui.liga;
+}
+function renderEventosDrop(){
+  S.ui.liga=$('ddLiga').value; persistir();
+  const dd=$('ddEvento');
+  const evs=eventosDoEsporte().filter(e=>!S.ui.liga||e.league===S.ui.liga);
+  if(!evs.length){ dd.innerHTML='<option value="">— nenhum evento —</option>'; return; }
+  dd.innerHTML='<option value="">— selecione —</option>'+evs.map(e=>{
+    const d=e.date?new Date(e.date):null;
+    const dt=d?` · ${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`:'';
+    return `<option value="${escH(e.id)}">${escH(e.home)} × ${escH(e.away)}${dt}</option>`;
+  }).join('');
+  if(S.ui.evento) dd.value=S.ui.evento;
+}
+function aoTrocarEvento(){ S.ui.evento=$('ddEvento').value; persistir(); renderTabelaEvento(); }
+function eventoSelecionado(){ return eventosDoEsporte().find(e=>String(e.id)===String(S.ui.evento)); }
+function renderTabelaEvento(){
+  const box=$('evTabela'); const ev=eventoSelecionado();
+  if(!ev){ box.innerHTML=''; return; }
+  const naLista=S.ativa.some(a=>String(a.id)===String(ev.id));
+  const d=ev.date?new Date(ev.date):null;
+  box.innerHTML=`<div class="ev-table"><table>
+    <tr><th>Partida</th><th>Liga</th><th>Data & hora</th><th>Status</th><th>Acompanhar</th></tr>
+    <tr>
+      <td data-l="Partida"><b>${escH(ev.home)}</b> × <b>${escH(ev.away)}</b></td>
+      <td data-l="Liga"><span>${escH(ev.league||'—')}</span></td>
+      <td data-l="Data & hora"><span style="font-family:var(--mono);font-size:12px">${d?d.toLocaleString('pt-BR'):'—'}</span></td>
+      <td data-l="Status"><span>${statusHtml(statusDe(ev))}</span></td>
+      <td data-l="Acompanhar"><input type="checkbox" class="chk" ${naLista?'checked':''} onchange="toggleAtiva('${escH(String(ev.id))}',this.checked)"></td>
+    </tr></table></div>`;
+}
+
+/* ============================================================
+   status do evento
+============================================================ */
+function statusDe(ev){
+  const o=S.db.odds[ev.id]; const st=o&&o.data&&o.data.status;
+  if(st==='settled'||st==='cancelled'||st==='finished') return {k:'done'};
+  const t=ev.date?new Date(ev.date).getTime():0;
+  const dur=(S.ui.esporte==='football'||ev.esporte==='football')?135:180; /* min */
+  if(!t) return {k:'soon',falta:null};
+  const dif=agora()-t;
+  if(dif<0) return {k:'soon',falta:-dif};
+  if(st==='live'||dif<dur*60e3) return {k:'live',corrido:dif,rest:Math.max(0,dur*60e3-dif)};
+  return {k:'done'};
+}
+function fmtDur(ms){
+  const m=Math.floor(ms/60e3);
+  if(m>=1440){ const d=Math.floor(m/1440); return d+'d '+Math.floor((m%1440)/60)+'h'; }
+  if(m>=60) return Math.floor(m/60)+'h '+String(m%60).padStart(2,'0')+'min';
+  return m+'min';
+}
+function statusHtml(st,ev){
+  if(st.k==='soon') return `<span class="dot soon" style="display:inline-block;vertical-align:middle"></span> <span style="font-family:var(--mono);font-size:11px">${st.falta!=null?'começa em '+fmtDur(st.falta):'agendado'}</span>`;
+  if(st.k==='live') return `<span class="dot live" style="display:inline-block;vertical-align:middle"></span> <span style="font-family:var(--mono);font-size:11px">≈${fmtDur(st.corrido)} corridos · resta ≈${fmtDur(st.rest)}</span>`;
+  return `<span class="dot done" style="display:inline-block;vertical-align:middle"></span> <span style="font-family:var(--mono);font-size:11px">encerrado</span>`;
+}
+
+/* ============================================================
+   lista ativa
+============================================================ */
+function toggleAtiva(id,on){
+  const ev=eventosDoEsporte().find(e=>String(e.id)===String(id))||S.ativa.find(a=>String(a.id)===String(id));
+  if(on&&ev){
+    if(!S.ativa.some(a=>String(a.id)===String(id)))
+      S.ativa.push({id:ev.id,esporte:S.ui.esporte||ev.esporte,home:ev.home,away:ev.away,date:ev.date,league:ev.league,cats:[],notify:false,subOpen:false});
+  } else {
+    S.ativa=S.ativa.filter(a=>String(a.id)!==String(id));
+    delete S.db.odds[id]; delete S.sig[id];
+  }
+  persistir(); renderAtiva(); renderTabelaEvento();
+}
+function itemPorId(id){ return S.ativa.find(a=>String(a.id)===String(id)); }
+
+const CATS=[
+  ['resultado','Resultado (1X2 / Vencedor)'],
+  ['dupla','Chance dupla'],
+  ['btts','Ambas equipes marcam'],
+  ['totais','Total de gols/pontos (Mais/Menos)'],
+  ['handicap','Handicap asiático / Spread'],
+  ['dnb','Empate anula aposta'],
+  ['placar','Placar exato'],
+  ['escanteios','Escanteios'],
+  ['cartoes','Cartões'],
+  ['primeiro_tempo','Mercados do 1º tempo'],
+  ['parimpar','Par / Ímpar'],
+  ['outros','Demais mercados disponíveis']
+];
+const catNome=k=>(CATS.find(c=>c[0]===k)||['','?'])[1];
+function classificar(nome){
+  const n=String(nome||'').toLowerCase();
+  if(/corner|escanteio/.test(n)) return 'escanteios';
+  if(/card|booking|cart/.test(n)) return 'cartoes';
+  if(/half|1st|first|ht\b|intervalo/.test(n)) return 'primeiro_tempo';
+  if(/correct score|placar/.test(n)) return 'placar';
+  if(/both teams|btts|ambas/.test(n)) return 'btts';
+  if(/double chance|dupla/.test(n)) return 'dupla';
+  if(/draw no bet|dnb/.test(n)) return 'dnb';
+  if(/odd\/?even|par\/?[ií]mpar/.test(n)) return 'parimpar';
+  if(/over\/?under|total/.test(n)) return 'totais';
+  if(/handicap|spread/.test(n)) return 'handicap';
+  if(/^ml$|moneyline|money line|match winner|1x2|match result|winner|to win/.test(n)) return 'resultado';
+  return 'outros';
+}
+const TRAD={home:'Casa',away:'Fora',draw:'Empate',over:'Mais de',under:'Menos de',yes:'Sim',no:'Não',odd:'Ímpar',even:'Par',homedraw:'Casa/Empate',homeaway:'Casa/Fora',drawaway:'Empate/Fora','1x':'Casa/Empate','12':'Casa/Fora','x2':'Empate/Fora'};
+const CHAVES_LINHA=['max','total','hdp','points','line','handicap','goals'];
+function rotuloSel(item,k,linha){
+  const nm={home:item?escH(item.home):'Casa',away:item?escH(item.away):'Fora'};
+  let base=TRAD[k.toLowerCase()]||k;
+  if(k.toLowerCase()==='home') base=nm.home;
+  if(k.toLowerCase()==='away') base=nm.away;
+  if(linha!=null&&/over|under|mais|menos/i.test(base)) return base+' '+linha;
+  if(linha!=null) return base+' ('+linha+')';
+  return base;
+}
+/* extrai grupos de seleções mutuamente exclusivas (por linha) de um mercado da API */
+function grupos(mkt,item){
+  const gs=[];
+  for(const row of (mkt.odds||[])){
+    if(!row||typeof row!=='object') continue;
+    let linha=null;
+    for(const lk of CHAVES_LINHA) if(row[lk]!==undefined&&row[lk]!==null){ linha=row[lk]; break; }
+    const sels=[];
+    for(const [k,v] of Object.entries(row)){
+      if(CHAVES_LINHA.includes(k)) continue;
+      const o=num(v);
+      if(isFinite(o)&&o>1.009&&o<1001) sels.push({k,label:rotuloSel(item,k,linha),odd:o});
+    }
+    if(sels.length) gs.push({linha,sels,updatedAt:row.updatedAt||mkt.updatedAt});
+  }
+  return gs;
+}
+function mercadosDoEvento(id){
+  const o=S.db.odds[id]; if(!o||!o.data) return null;
+  const bks=o.data.bookmakers||{};
+  let mkts=bks[S.bookie];
+  if(!mkts){ const primeira=Object.keys(bks)[0]; mkts=primeira?bks[primeira]:null; }
+  if(!Array.isArray(mkts)) return null;
+  return mkts.map(m=>({nome:m.name||'?',cat:classificar(m.name),bruto:m,updatedAt:m.updatedAt}));
+}
+
+function renderAtiva(){
+  const box=$('listaAtiva');
+  $('ativaVazio').style.display=S.ativa.length?'none':'block';
+  $('ativaCount').textContent=S.ativa.length?`· ${S.ativa.length} evento(s)`:'';
+  box.innerHTML=S.ativa.map(a=>{
+    const st=statusDe(a);
+    const clic=st.k!=='done'?`onclick="abrirMercados('${escH(String(a.id))}')" title="Clique para escolher os mercados acompanhados"`:'';
+    const mkts=mercadosDoEvento(a.id);
+    let subHtml='';
+    if(a.cats.length){
+      if(!mkts) subHtml='<div class="vazio">Sem odds em cache ainda — salve os mercados ou force uma atualização.</div>';
+      else{
+        for(const cat of a.cats){
+          const doCat=mkts.filter(m=>m.cat===cat);
+          subHtml+=`<div class="mkt"><h5>${escH(catNome(cat))}</h5>`;
+          if(!doCat.length) subHtml+=`<div class="vazio" style="padding:2px 0">não oferecido pela casa selecionada</div>`;
+          else for(const m of doCat){
+            const gs=grupos(m.bruto,a);
+            subHtml+=`<div style="font-size:11px;color:var(--muted);margin:4px 0 2px">${escH(m.nome)}</div><div class="odd-chips">`+
+              gs.slice(0,14).map(g=>g.sels.map(s=>`<span class="odd-chip">${escH(s.label)} <b>${s.odd.toFixed(2)}</b></span>`).join('')).join('')+
+              `</div>`;
+            if(m.updatedAt) subHtml+=`<div class="upd">atualizado: ${new Date(m.updatedAt).toLocaleTimeString('pt-BR')}</div>`;
+          }
+          subHtml+=`</div>`;
+        }
+      }
+    } else subHtml='<div class="vazio">Nenhum mercado selecionado — clique no evento para escolher.</div>';
+    return `<div class="item">
+      <div class="item-hd">
+        <input type="checkbox" class="chk" checked onchange="toggleAtiva('${escH(String(a.id))}',false)" title="Desmarcar remove da lista">
+        <div class="clic" ${clic}>
+          <span class="dot ${st.k}"></span>
+          <div>
+            <div class="item-title">${escH(a.home)} × ${escH(a.away)}</div>
+            <div class="item-meta">${escH(a.league||'')}${a.league?' · ':''}${a.date?new Date(a.date).toLocaleString('pt-BR'):''} · <b class="st-txt" data-id="${escH(String(a.id))}">${statusTexto(st)}</b></div>
+          </div>
+        </div>
+        <div class="item-tools">
+          <label class="notif-wrap" title="Notificar mudanças de odds deste evento">🔔<input type="checkbox" class="chk" ${a.notify?'checked':''} onchange="toggleNotify('${escH(String(a.id))}',this.checked)"></label>
+          <button class="mini-btn lamp" onclick="abrirDicas('${escH(String(a.id))}')" title="Sugestões de aposta">💡</button>
+        </div>
+      </div>
+      <div class="sub">
+        <button class="sub-hd" onclick="toggleSub('${escH(String(a.id))}')">${a.subOpen?'▾':'▸'} mercados acompanhados (${a.cats.length})</button>
+        <div class="sub-bd" style="display:${a.subOpen?'block':'none'}">${subHtml}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function statusTexto(st){
+  if(st.k==='soon') return st.falta!=null?('começa em '+fmtDur(st.falta)):'agendado';
+  if(st.k==='live') return '≈'+fmtDur(st.corrido)+' corridos · resta ≈'+fmtDur(st.rest);
+  return 'encerrado';
+}
+function toggleSub(id){ const a=itemPorId(id); if(!a) return; a.subOpen=!a.subOpen; persistir(); renderAtiva(); }
+function toggleNotify(id,on){
+  const a=itemPorId(id); if(!a) return; a.notify=on;
+  if(on){
+    const base=snapOdds(id); if(base) S.sig[id]=base; /* baseline imediata: a próxima mudança já dispara */
+    if(S.notif) pedirPermissaoNotif(); else alert('Lembrete: ative as notificações nas configurações (⚙) para este sino ter efeito.');
+  }
+  persistir();
+}
+/* atualiza só os textos de tempo a cada segundo (sem re-render pesado) */
+setInterval(()=>{
+  document.querySelectorAll('.st-txt').forEach(el=>{
+    const a=itemPorId(el.dataset.id); if(a) el.textContent=statusTexto(statusDe(a));
+  });
+},1000);
+
+/* ============================================================
+   odds: busca com cache + multi (até 10 eventos = 1 requisição)
+============================================================ */
+async function garantirOdds(ids,force){
+  if(!S.apiKey){ abrirConfig(); throw new Error('Configure a chave da API primeiro.'); }
+  const alvo=ids.filter(id=>{ const c=S.db.odds[id]; return force||!c||agora()-c.ts>ttlMs(); });
+  if(!alvo.length) return 0;
+  let feitas=0; const atualizados=[];
+  for(let i=0;i<alvo.length;i+=10){
+    const lote=alvo.slice(i,i+10);
+    let dados;
+    if(lote.length===1) dados=[await apiGet('/odds',{eventId:lote[0],bookmakers:S.bookie})];
+    else dados=await apiGet('/odds/multi',{eventIds:lote.join(','),bookmakers:S.bookie});
+    feitas++;
+    const arr=Array.isArray(dados)?dados:(dados.events||dados.data||[dados]);
+    for(const d of arr){ if(d&&d.id!=null){ S.db.odds[d.id]={ts:agora(),data:d}; atualizados.push(d.id); } }
+    /* se veio menos que o pedido, marca timestamp dos ausentes p/ não repetir já */
+    for(const id of lote) if(!S.db.odds[id]) S.db.odds[id]={ts:agora(),data:null};
+  }
+  persistir();
+  /* toda atualização de odds passa pelo detector de mudanças — a notificação
+     sai no instante em que o dado novo chega, venha do timer, do botão
+     Forçar, do Salvar mercados ou da lâmpada */
+  verificarMudancas(atualizados);
+  return feitas;
+}
+
+/* ============================================================
+   forçar atualização
+============================================================ */
+async function forcarAtualizacao(){
+  if(!confirm('Forçar atualização agora? Isso ignora o cache e consome requisições da sua cota horária.')) return;
+  const btn=$('btnForcar'); btn.disabled=true; btn.innerHTML='<span class="spin">⟳</span> atualizando…';
+  try{
+    if(S.ui.esporte) await garantirEventos(S.ui.esporte,true);
+    if(S.ativa.length) await garantirOdds(S.ativa.map(a=>a.id),true);
+    renderLigas(); renderEventosDrop(); renderTabelaEvento(); renderAtiva();
+  }catch(e){ mostrarSelErr('Falha na atualização: '+e.message); }
+  btn.disabled=false; btn.innerHTML='⟳ Forçar atualização';
+}
+
+/* ============================================================
+   modal de mercados
+============================================================ */
+let mercEventoId=null;
+function abrirMercados(id){
+  const a=itemPorId(id); if(!a) return;
+  mercEventoId=id;
+  $('mercTitulo').textContent=`Mercados — ${a.home} × ${a.away}`;
+  $('mercCats').innerHTML=CATS.map(([k,l])=>`<label class="cat-chk"><input type="checkbox" class="chk" data-cat="${k}" ${a.cats.includes(k)?'checked':''}> ${l}</label>`).join('');
+  $('ovMercados').classList.add('aberto');
+}
+async function fecharMercados(salvar){
+  if(salvar&&mercEventoId!=null){
+    const a=itemPorId(mercEventoId);
+    if(a){
+      a.cats=[...document.querySelectorAll('#mercCats [data-cat]')].filter(c=>c.checked).map(c=>c.dataset.cat);
+      persistir();
+      try{ await garantirOdds([a.id]); }catch(e){ alert('Não foi possível buscar as odds: '+e.message); }
+      a.subOpen=true; persistir();
+    }
+  }
+  $('ovMercados').classList.remove('aberto'); mercEventoId=null; renderAtiva();
+}
+
+/* ============================================================
+   notificações
+============================================================ */
+let notifTimer=null, swReg=null;
+/* registra o service worker (indispensável para notificar no Android) */
+async function registrarSW(){
+  if(!('serviceWorker' in navigator)) return;
+  try{
+    swReg=await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+  }catch(e){ /* file:// ou sw.js ausente: seguimos com os fallbacks */ }
+}
+/* toast na página — garantia de que o aviso nunca se perde em silêncio */
+function toast(msg){
+  let box=$('toasts');
+  if(!box){ box=document.createElement('div'); box.id='toasts';
+    box.style.cssText='position:fixed;bottom:16px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;max-width:92vw';
+    document.body.appendChild(box); }
+  const t=document.createElement('div');
+  t.style.cssText='background:var(--wine);color:#FDF6EE;padding:11px 16px;border-radius:12px;font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.4);white-space:pre-line';
+  t.textContent=msg;
+  box.appendChild(t);
+  setTimeout(()=>t.remove(),8000);
+}
+/* dispara a notificação pelo melhor canal disponível:
+   1) SW.showNotification (único que funciona no Chrome Android)
+   2) new Notification (desktop)
+   3) toast na página */
+async function notificar(titulo,corpo,tagId){
+  const opts={body:corpo,tag:tagId,renotify:true,icon:ICONE,badge:ICONE,vibrate:[180,90,180]};
+  try{
+    if(!('Notification' in window)||Notification.permission!=='granted') throw new Error('sem permissão');
+    let reg=swReg;
+    if(!reg&&('serviceWorker' in navigator)){ try{ reg=await navigator.serviceWorker.getRegistration(); }catch(e){} }
+    if(reg&&reg.showNotification){ await reg.showNotification(titulo,opts); return 'sw'; }
+    new Notification(titulo,opts); return 'ctor';
+  }catch(e){
+    toast('🔔 '+titulo+'\n'+corpo);
+    return 'toast';
+  }
+}
+function pedirPermissaoNotif(){
+  if(!('Notification' in window)){ alert('Este navegador não suporta notificações.'); return; }
+  if(Notification.permission==='denied'){ alert('As notificações estão BLOQUEADAS para esta página nas permissões do navegador. Libere-as no cadeado da barra de endereço para receber os avisos.'); return; }
+  if(Notification.permission==='default'){
+    Notification.requestPermission().then(p=>{
+      if(p!=='granted') alert('Sem a permissão, o navegador não exibe os avisos de mudança de odds.');
+    });
+  }
+}
+function armarNotifTimer(){
+  if(notifTimer){ clearInterval(notifTimer); notifTimer=null; }
+  if(!S.notif) return;
+  notifTimer=setInterval(cicloNotif, ttlMs());
+}
+/* fotografa as odds vigentes dos mercados acompanhados: {"Mercado linha · Seleção": odd} */
+function snapOdds(id){
+  const mkts=mercadosDoEvento(id); if(!mkts) return null;
+  const a=itemPorId(id);
+  const alvo=(a&&a.cats.length)?mkts.filter(m=>a.cats.includes(m.cat)):mkts;
+  const map={};
+  for(const m of alvo)
+    for(const g of grupos(m.bruto,a))
+      for(const s of g.sels)
+        map[m.nome+(g.linha!=null?' '+g.linha:'')+' · '+s.label]=s.odd;
+  return map;
+}
+/* compara o snapshot novo com o anterior e notifica NA HORA cada odd que mudou */
+function verificarMudancas(ids){
+  let mudouAlgo=false;
+  for(const id of ids){
+    const novo=snapOdds(id); if(!novo) continue;
+    const antigo=S.sig[id];
+    const a=itemPorId(id);
+    if(antigo&&a&&a.notify&&S.notif){
+      const difs=[];
+      for(const [k,v] of Object.entries(novo)){
+        const old=antigo[k];
+        if(old!=null&&Math.abs(old-v)>1e-9)
+          difs.push(k.replace(/<[^>]*>/g,'')+': '+Number(old).toFixed(2)+' → '+Number(v).toFixed(2));
+      }
+      if(difs.length){
+        mudouAlgo=true;
+        const corpo=difs.slice(0,4).join('\n')+(difs.length>4?'\n… e mais '+(difs.length-4)+' mudança(s)':'');
+        notificar('🐆 betcat · '+a.home+' × '+a.away,corpo,'betcat-'+id);
+      }
+    }
+    S.sig[id]=novo; /* baseline sempre avança, mesmo sem notificar */
+  }
+  if(ids.length) persistir();
+  if(mudouAlgo) renderAtiva();
+}
+async function cicloNotif(){
+  if(!S.notif) return;
+  const alvo=S.ativa.filter(a=>a.notify&&statusDe(a).k!=='done').map(a=>a.id);
+  if(!alvo.length) return;
+  /* force=false: só busca se o cache venceu — o timer dispara no ritmo do TTL,
+     e o catch-up ao voltar para a aba não gasta requisição à toa */
+  try{ await garantirOdds(alvo,false); }catch(e){} /* o diff+notificação acontece dentro do garantirOdds */
+}
+/* Android congela timers de abas em segundo plano: ao voltar, verifica na hora */
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden) cicloNotif(); });
+
+/* teste de ponta a ponta + diagnóstico do canal usado */
+async function testarNotif(){
+  pedirPermissaoNotif();
+  const canal=await notificar('🐆 betcat · teste','Se você está vendo isto, as notificações funcionam! Canal: aguarde…','betcat-teste');
+  const diag=$('cfgDiag');
+  if(diag){
+    const perm=('Notification' in window)?Notification.permission:'sem suporte';
+    const sinos=S.ativa.filter(a=>a.notify).length;
+    diag.innerHTML=`Diagnóstico — permissão: <b>${perm}</b> · service worker: <b>${swReg?'registrado ✓':'ausente (sw.js precisa estar na mesma pasta)'}</b> · canal usado no teste: <b>${canal==='sw'?'service worker ✓':(canal==='ctor'?'construtor (desktop)':'toast na página — notificação nativa indisponível')}</b> · notificações globais: <b>${S.notif?'ligadas':'DESLIGADAS'}</b> · eventos com 🔔: <b>${sinos}</b>`;
+    diag.style.display='block';
+  }
+}
+
+/* ============================================================
+   configurações
+============================================================ */
+function syncIntervalo(v){
+  v=Math.min(60,Math.max(1,parseInt(v)||10));
+  $('cfgIntervalo').value=v; $('cfgIntervaloTxt').value=v;
+  $('cfgReqHora').textContent=Math.round(60/v);
+}
+function abrirConfig(){
+  $('cfgKey').value=S.apiKey;
+  syncIntervalo(S.intervaloMin);
+  $('cfgTema').checked=S.tema==='escuro';
+  $('cfgNotif').checked=S.notif;
+  renderBookies();
+  $('ovConfig').classList.add('aberto');
+}
+function fecharConfig(){ $('ovConfig').classList.remove('aberto'); }
+function salvarConfig(){
+  S.apiKey=$('cfgKey').value.trim();
+  S.intervaloMin=Math.min(60,Math.max(1,parseInt($('cfgIntervaloTxt').value)||10));
+  S.bookie=$('cfgBookie').value;
+  S.tema=$('cfgTema').checked?'escuro':'claro';
+  const notifAntes=S.notif;
+  S.notif=$('cfgNotif').checked;
+  if(S.notif&&!notifAntes) pedirPermissaoNotif();
+  persistir(); aplicarTema(); armarNotifTimer(); fecharConfig();
+  if(S.ui.esporte&&!eventosDoEsporte().length) aoTrocarEsporte();
+}
+function aplicarTema(){ document.documentElement.setAttribute('data-theme',S.tema==='escuro'?'escuro':'claro'); }
+
+/* ============================================================
+   💡 sugestões de aposta (dutching / arbitragem / cobertura / middle)
+============================================================ */
+let dicaEventoId=null;
+function abrirDicas(id){
+  const a=itemPorId(id); if(!a) return;
+  dicaEventoId=id;
+  $('dicasTitulo').textContent=`💡 ${a.home} × ${a.away}`;
+  $('dicasErr').style.display='none';
+  $('dicasCorpo').innerHTML='<p class="vazio">Informe o valor e clique em Calcular. As sugestões usam apenas os mercados que você selecionou para este evento.</p>';
+  $('ovDicas').classList.add('aberto');
+}
+function fecharDicas(){ $('ovDicas').classList.remove('aberto'); dicaEventoId=null; }
+
+function dutch(sels,T){
+  const Ssum=sels.reduce((x,s)=>x+1/s.odd,0);
+  const stakes=sels.map(s=>T*(1/s.odd)/Ssum);
+  const ret=T/Ssum;
+  return {Ssum,stakes,ret,lucro:ret-T,margem:(Ssum-1)*100};
+}
+function linhaCenario(nome,valor){
+  return `<tr><td class="t">${nome}</td><td class="${clsV(valor)}" style="text-align:right">${fBRL(valor)}</td></tr>`;
+}
+function blocoDutch(titulo,sels,T,extra=''){
+  const d=dutch(sels,T);
+  const badge=d.lucro>0.005?'<span class="badge arb">arbitragem — lucro garantido</span>':'<span class="badge hedge">hedge total</span>';
+  const expl=d.lucro>0.005
+    ?`As odds desta casa somam ${d.Ssum.toFixed(4)} de probabilidade implícita (&lt;1): distribuindo o valor proporcionalmente a 1/odd, você recebe ${fBRL(d.ret)} <b>seja qual for o resultado</b> — lucro travado.`
+    :`Cobrir todos os desfechos custa a margem da casa (${d.margem.toFixed(1)}%). A distribuição abaixo iguala o retorno em qualquer cenário: você saberia sua perda exata de antemão (${fBRL(d.lucro)}). Útil como referência de custo do hedge — não como aposta.`;
+  return `<div class="dica"><h4>${titulo} ${badge}</h4><p class="expl">${expl}</p>
+    <table><tr><th>Seleção</th><th style="text-align:right">Apostar</th><th style="text-align:right">Se vencer, resultado líquido</th></tr>
+    ${sels.map((s,i)=>`<tr><td class="t">${escH(s.label)} <span style="color:var(--muted)">@ ${s.odd.toFixed(2)}</span></td><td style="text-align:right">${fBRL(d.stakes[i])}</td><td class="${clsV(d.lucro)}" style="text-align:right">${fBRL(d.lucro)}</td></tr>`).join('')}
+    </table><div class="margem">soma das probabilidades implícitas: ${d.Ssum.toFixed(4)} · margem da casa neste mercado: ${d.margem.toFixed(1)}%</div>${extra}</div>`;
+}
+function blocoCoberturaParcial(tituloBase,sels,T){
+  /* deixa 1 de fora por vez (para 3+ vias) */
+  let html='';
+  if(sels.length<3) return html;
+  const St=sels.reduce((x,s)=>x+1/s.odd,0);
+  const combos=sels.map((fora,idx)=>{
+    const dentro=sels.filter((_,i)=>i!==idx);
+    const d=dutch(dentro,T);
+    const cob=dentro.reduce((x,s)=>x+1/s.odd,0)/St;
+    return {fora,dentro,d,cob};
+  }).sort((a,b)=>b.d.lucro-a.d.lucro);
+  for(const c of combos.slice(0,3)){
+    html+=`<div class="dica"><h4>${tituloBase}: cobrir tudo, exceto “${escH(c.fora.label)}” <span class="badge cob">cobertura ${(c.cob*100).toFixed(0)}%</span></h4>
+    <p class="expl">Você distribui o valor entre ${c.dentro.map(s=>'“'+escH(s.label)+'”').join(' e ')} de forma a ganhar o mesmo em qualquer um deles; só perde se sair exatamente “${escH(c.fora.label)}”. Pelas odds da casa, os cenários cobertos concentram ≈${(c.cob*100).toFixed(0)}% da probabilidade.</p>
+    <table><tr><th>Seleção</th><th style="text-align:right">Apostar</th></tr>
+    ${c.dentro.map((s,i)=>`<tr><td class="t">${escH(s.label)} <span style="color:var(--muted)">@ ${s.odd.toFixed(2)}</span></td><td style="text-align:right">${fBRL(c.d.stakes[i])}</td></tr>`).join('')}
+    </table>
+    <table style="margin-top:8px"><tr><th>Cenário</th><th style="text-align:right">Resultado líquido</th></tr>
+    ${c.dentro.map(s=>linhaCenario('Sai “'+escH(s.label)+'”',c.d.lucro)).join('')}
+    ${linhaCenario('Sai “'+escH(c.fora.label)+'”',-T)}
+    </table></div>`;
+  }
+  return html;
+}
+function blocoMiddle(item,gsOU,T){
+  /* procura pares over(L1)/under(L2) com L2 - L1 >= 1 (janela de vitória dupla) */
+  let html='';
+  const overs=[],unders=[];
+  for(const g of gsOU){ if(g.linha==null) continue;
+    for(const s of g.sels){ const kk=s.k.toLowerCase();
+      if(kk==='over') overs.push({linha:num(g.linha),odd:s.odd});
+      if(kk==='under') unders.push({linha:num(g.linha),odd:s.odd});
+    }
+  }
+  const pares=[];
+  for(const o of overs) for(const u of unders)
+    if(isFinite(o.linha)&&isFinite(u.linha)&&u.linha-o.linha>=1) pares.push({o,u,janela:u.linha-o.linha});
+  pares.sort((a,b)=>(b.o.odd*b.u.odd)-(a.o.odd*a.u.odd));
+  for(const p of pares.slice(0,2)){
+    const sO=T*p.u.odd/(p.o.odd+p.u.odd), sU=T-sO;
+    const netSingle=sO*p.o.odd-T;
+    const netBoth=sO*p.o.odd+sU*p.u.odd-T;
+    html+=`<div class="dica"><h4>Middle: Mais de ${p.o.linha} + Menos de ${p.u.linha} <span class="badge cob">janela dupla</span></h4>
+    <p class="expl">Se o total cair <b>entre ${p.o.linha} e ${p.u.linha}</b> (ex.: exatamente ${Math.ceil(p.o.linha)}${p.janela>1?'–'+Math.floor(p.u.linha):''}), as <b>duas</b> apostas vencem ao mesmo tempo. Fora da janela, apenas uma vence — a distribuição abaixo iguala esse resultado nos dois lados.</p>
+    <table><tr><th>Seleção</th><th style="text-align:right">Apostar</th></tr>
+    <tr><td class="t">Mais de ${p.o.linha} <span style="color:var(--muted)">@ ${p.o.odd.toFixed(2)}</span></td><td style="text-align:right">${fBRL(sO)}</td></tr>
+    <tr><td class="t">Menos de ${p.u.linha} <span style="color:var(--muted)">@ ${p.u.odd.toFixed(2)}</span></td><td style="text-align:right">${fBRL(sU)}</td></tr></table>
+    <table style="margin-top:8px"><tr><th>Cenário</th><th style="text-align:right">Resultado líquido</th></tr>
+    ${linhaCenario('Total abaixo da janela (só o Menos vence)',netSingle)}
+    ${linhaCenario('Total DENTRO da janela (as duas vencem) 🎯',netBoth)}
+    ${linhaCenario('Total acima da janela (só o Mais vence)',netSingle)}
+    </table></div>`;
+  }
+  return html;
+}
+function calcularDicas(){
+  const errEl=$('dicasErr'); errEl.style.display='none';
+  const T=num($('dicaStake').value);
+  if(!(T>0)){ errEl.textContent='Informe um valor válido para distribuir.'; errEl.style.display='block'; return; }
+  const a=itemPorId(dicaEventoId);
+  if(!a){ errEl.textContent='Evento não encontrado.'; errEl.style.display='block'; return; }
+  if(!a.cats.length){ errEl.textContent='Este evento não tem mercados selecionados — clique no evento na lista ativa e escolha os mercados primeiro.'; errEl.style.display='block'; return; }
+  const corpo=$('dicasCorpo');
+  const montar=()=>{
+    const mkts=mercadosDoEvento(a.id);
+    if(!mkts){ errEl.textContent='Sem odds em cache para este evento. Use “Forçar atualização” ou salve os mercados novamente.'; errEl.style.display='block'; return; }
+    const escolhidos=mkts.filter(m=>a.cats.includes(m.cat));
+    if(!escolhidos.length){ errEl.textContent='A casa selecionada não oferece nenhum dos mercados escolhidos para este evento.'; errEl.style.display='block'; return; }
+    let html='';
+    /* ranking de margens: onde a casa cobra menos */
+    const margens=[];
+    for(const m of escolhidos){
+      for(const g of grupos(m.bruto,a)){
+        if(g.sels.length>=2){
+          const Ssum=g.sels.reduce((x,s)=>x+1/s.odd,0);
+          margens.push({nome:m.nome+(g.linha!=null?` (linha ${g.linha})`:''),marg:(Ssum-1)*100});
+        }
+      }
+    }
+    if(margens.length){
+      margens.sort((x,y)=>x.marg-y.marg);
+      html+=`<div class="dica"><h4>Onde a casa cobra menos <span class="badge cob">leitura de valor</span></h4>
+      <p class="expl">Margem é o "pedágio" embutido nas odds de cada mercado — quanto menor, mais justo o preço. Se for entrar seco em alguma seleção, prefira os mercados do topo desta lista.</p>
+      <table><tr><th>Mercado</th><th style="text-align:right">Margem da casa</th></tr>
+      ${margens.slice(0,6).map(m=>`<tr><td class="t">${escH(m.nome)}</td><td style="text-align:right" class="${m.marg<3?'pos':(m.marg>7?'neg':'neu')}">${m.marg.toFixed(1)}%</td></tr>`).join('')}</table></div>`;
+    }
+    /* por mercado: dutching, cobertura parcial, middle */
+    for(const m of escolhidos){
+      const gs=grupos(m.bruto,a);
+      if(!gs.length) continue;
+      if(m.cat==='totais'||m.cat==='escanteios'||m.cat==='cartoes'){
+        for(const g of gs.slice(0,4)) if(g.sels.length>=2)
+          html+=blocoDutch(`${escH(m.nome)}${g.linha!=null?` — linha ${g.linha}`:''}`,g.sels,T);
+        html+=blocoMiddle(a,gs,T);
+      } else if(m.cat==='placar'){
+        const todas=gs.flatMap(g=>g.sels).sort((x,y)=>x.odd-y.odd);
+        if(todas.length>=3){
+          const top=todas.slice(0,5);
+          const d=dutch(top,T);
+          const cob=top.reduce((x,s)=>x+1/s.odd,0)/todas.reduce((x,s)=>x+1/s.odd,0);
+          html+=`<div class="dica"><h4>${escH(m.nome)}: cobrir os ${top.length} placares mais prováveis <span class="badge cob">cobertura ≈${(cob*100).toFixed(0)}%</span></h4>
+          <p class="expl">Distribui o valor entre os placares de menor odd (mais prováveis segundo a casa), igualando o retorno se qualquer um deles sair. Qualquer outro placar perde tudo — é uma aposta de alto risco e alto retorno relativo.</p>
+          <table><tr><th>Placar</th><th style="text-align:right">Apostar</th></tr>
+          ${top.map((s,i)=>`<tr><td class="t">${escH(s.label)} <span style="color:var(--muted)">@ ${s.odd.toFixed(2)}</span></td><td style="text-align:right">${fBRL(d.stakes[i])}</td></tr>`).join('')}</table>
+          <table style="margin-top:8px"><tr><th>Cenário</th><th style="text-align:right">Resultado líquido</th></tr>
+          ${linhaCenario('Sai um dos placares cobertos',d.lucro)}
+          ${linhaCenario('Sai qualquer outro placar',-T)}</table></div>`;
+        }
+      } else {
+        for(const g of gs.slice(0,4)){
+          if(g.sels.length>=2) html+=blocoDutch(`${escH(m.nome)}${g.linha!=null?` — linha ${g.linha}`:''}`,g.sels,T);
+          if(g.sels.length>=3) html+=blocoCoberturaParcial(escH(m.nome),g.sels,T);
+        }
+      }
+    }
+    /* dica cruzada: chance dupla vs 1X2 sintético */
+    const mR=escolhidos.find(m=>m.cat==='resultado'), mD=escolhidos.find(m=>m.cat==='dupla');
+    if(mR&&mD){
+      const gR=grupos(mR.bruto,a)[0], gD=grupos(mD.bruto,a)[0];
+      if(gR&&gD&&gR.sels.length>=3){
+        const o={}; gR.sels.forEach(s=>o[s.k.toLowerCase()]=s.odd);
+        const pares=[['homedraw',['home','draw'],'Casa/Empate'],['drawaway',['draw','away'],'Empate/Fora'],['homeaway',['home','away'],'Casa/Fora'],['1x',['home','draw'],'Casa/Empate'],['x2',['draw','away'],'Empate/Fora'],['12',['home','away'],'Casa/Fora']];
+        let rows='';
+        for(const [k,par,nome] of pares){
+          const sd=gD.sels.find(s=>s.k.toLowerCase()===k);
+          if(sd&&o[par[0]]&&o[par[1]]){
+            const sint=1/(1/o[par[0]]+1/o[par[1]]);
+            const melhor=sd.odd>sint;
+            rows+=`<tr><td class="t">${nome}</td><td style="text-align:right">${sd.odd.toFixed(2)}</td><td style="text-align:right">${sint.toFixed(2)}</td><td class="t">${melhor?'<span class="pos">chance dupla paga mais</span>':'<span class="neu">dividir no 1X2 paga mais</span>'}</td></tr>`;
+          }
+        }
+        if(rows) html+=`<div class="dica"><h4>Chance dupla vs. dividir no 1X2 <span class="badge cob">comparação</span></h4>
+        <p class="expl">A chance dupla equivale a distribuir a aposta em dois resultados do 1X2. Compare a odd oferecida com a odd sintética do dutching — entre no que pagar mais.</p>
+        <table><tr><th>Combinação</th><th style="text-align:right">Odd chance dupla</th><th style="text-align:right">Odd sintética (1X2)</th><th>Veredito</th></tr>${rows}</table></div>`;
+      }
+    }
+    corpo.innerHTML=html||'<p class="vazio">Não encontrei estrutura de odds suficiente nos mercados selecionados para gerar sugestões.</p>';
+  };
+  garantirOdds([a.id]).then(montar).catch(e=>{ montar(); if(!mercadosDoEvento(a.id)){ errEl.textContent='Falha ao buscar odds: '+e.message; errEl.style.display='block'; } });
+}
+
+/* ============================================================
+   caixa de seleção colapsável
+============================================================ */
+function toggleSelBox(){
+  S.ui.selOpen=!S.ui.selOpen; persistir();
+  $('selBd').style.display=S.ui.selOpen?'block':'none';
+  $('selCaret').textContent=S.ui.selOpen?'▲ recolher':'▼ expandir';
+}
+
+/* ============================================================
+   init
+============================================================ */
+async function bootBetcat(){
+  renderContador();
+  $('selBd').style.display=S.ui.selOpen?'block':'none';
+  $('selCaret').textContent=S.ui.selOpen?'▲ recolher':'▼ expandir';
+  renderAtiva();
+  podarCache(false);
+  await garantirCatalogos(false);
+  if(!S.apiKey){ abrirConfig(); }
+  if(S.ui.esporte){
+    $('ddEsporte').value=S.ui.esporte;
+    await garantirEventos(S.ui.esporte,false);
+    renderLigas(); renderEventosDrop(); renderTabelaEvento();
+  }
+  /* revalida odds da lista ativa respeitando o timestamp do cache */
+  if(S.apiKey&&S.ativa.length){
+    try{ await garantirOdds(S.ativa.map(a=>a.id),false); }catch(e){}
+    renderAtiva();
+  }
+  armarNotifTimer();
+  registrarSW();
+  setInterval(renderContador,30e3);
+}
+
+/* ---- portão: tema e estado carregam sempre; o app só liga com a senha ---- */
+carregarEstado();
+aplicarTema();
+if(jaAutenticado()){
+  $('gate').style.display='none';
+  bootBetcat();
+}else{
+  $('gate').style.display='flex';
+  setTimeout(()=>{ try{ $('gateSenha').focus(); }catch(e){} },80);
+}
+</script>
+</body>
+</html>
