@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-G4L0D6YV5H"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-G4L0D6YV5H');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Mapa de Repetidoras</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<style>
+  :root{
+    --bg:#15171a; --panel:#1e2125; --panel2:#262a2f; --border:#33383e;
+    --text:#e7e9ec; --text-dim:#9aa1a8; --accent:#d4a017; --accent-text:#1a0a00;
+    --pink:#ff2d8e;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);}
+
+  #app{display:flex;flex-direction:column;height:100%;position:relative;}
+
+  #topbar{
+    display:flex;align-items:center;gap:10px;
+    position:absolute;top:0;left:0;right:0;height:48px;background:var(--panel);
+    border-bottom:1px solid var(--border);z-index:1300;padding:0 10px;
+  }
+  #topbar h1{font-size:14px;margin:0;flex:1;color:var(--text);display:flex;align-items:center;gap:6px;}
+  #menuToggle{
+    width:40px;height:40px;border-radius:6px;border:1px solid var(--accent);
+    background:var(--accent);color:var(--accent-text);
+    font-size:19px;cursor:pointer;flex:0 0 auto;font-weight:bold;
+  }
+
+  #sidebar{
+    position:absolute;top:48px;left:0;right:0;width:100%;
+    background:var(--panel);padding:14px;overflow-y:auto;z-index:1200;
+    max-height:80vh;border-bottom:1px solid var(--border);
+    box-shadow:0 6px 18px rgba(0,0,0,.6);
+    transform:translateY(0);transition:transform .25s ease;
+  }
+  #sidebar.collapsed{transform:translateY(-110%);box-shadow:none;border-bottom:none;}
+
+  /* Logo com proporção 1280×287 */
+  #logo-img{
+    width:100%;aspect-ratio:1280/287;object-fit:contain;
+    border-radius:6px;margin-bottom:10px;background:transparent;display:block;
+  }
+  #intro-text{font-size:12px;color:var(--text-dim);line-height:1.6;margin-bottom:14px;}
+
+  #sidebar label{display:block;font-size:12px;font-weight:bold;margin:10px 0 4px;color:var(--text);}
+  #sidebar input[type=text]{
+    width:100%;padding:9px;font-size:14px;
+    border:1px solid var(--border);border-radius:5px;
+    background:var(--panel2);color:var(--text);
+  }
+  #sidebar input[type=file]{font-size:12px;width:100%;color:var(--text-dim);}
+  #sidebar button{
+    margin-top:10px;width:100%;padding:11px;font-size:14px;
+    border:1px solid var(--accent);background:var(--accent);
+    color:var(--accent-text);border-radius:5px;cursor:pointer;font-weight:bold;
+  }
+  #sidebar button.secondary{background:var(--panel2);color:var(--text);border-color:var(--border);}
+  #setuser.confirmed{background:#4a4a4a;border-color:#555;color:#aaa;cursor:default;}
+  #sidebar .hint{font-size:11px;color:var(--text-dim);margin-top:4px;line-height:1.4;}
+  #status{font-size:12px;margin-top:10px;color:#4ade80;white-space:pre-wrap;}
+  #count{font-size:12px;color:var(--text-dim);margin-top:8px;}
+  #zoomctrl{display:flex;gap:6px;margin-top:8px;}
+  #zoomctrl button{flex:1;margin-top:0;}
+
+  /* Mapa */
+  #mapwrap{position:absolute;top:48px;left:0;right:0;bottom:0;overflow:hidden;}
+  #leafletmap{position:absolute;inset:0;}
+  #overlay{position:absolute;inset:0;pointer-events:none;z-index:600;}
+
+  /* Botões flutuantes de toggle — canto superior direito do mapa */
+  #floatLinesBtn, #floatMaidenBtn{
+    position:absolute;right:10px;z-index:1100;
+    width:44px;height:44px;
+    background:var(--panel);border:1px solid var(--border);border-radius:7px;
+    box-shadow:0 2px 6px rgba(0,0,0,.55);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;cursor:pointer;user-select:none;
+  }
+  #floatLinesBtn{top:10px;}
+  #floatMaidenBtn{top:62px;}
+  #floatLinesBtn:hover, #floatMaidenBtn:hover{border-color:var(--pink);}
+  .fl-icon{font-size:16px;line-height:1;}
+  .fl-cb{width:14px;height:14px;accent-color:var(--pink);cursor:pointer;}
+
+  /* Seletor de camadas */
+  #layerSwitch{
+    position:absolute;bottom:10px;right:10px;z-index:1100;
+    background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:5px;
+    display:flex;gap:3px;box-shadow:0 1px 5px rgba(0,0,0,.6);
+  }
+  #layerSwitch button{
+    border:1px solid var(--border);background:var(--panel2);color:var(--text);
+    border-radius:5px;font-size:12px;padding:7px 8px;cursor:pointer;
+  }
+  #layerSwitch button.active{
+    background:var(--accent);color:var(--accent-text);
+    border-color:var(--accent);font-weight:bold;
+  }
+
+  /* SVG overlay */
+  .leader{stroke:var(--pink);stroke-width:1.2;fill:none;}
+  .distline{stroke:var(--pink);stroke-width:1.2;stroke-dasharray:4,3;fill:none;opacity:.8;}
+  .distline.active-line{stroke:var(--pink);opacity:1;stroke-dasharray:none;stroke-width:1.5;}
+  .labelbox-rect{fill:#f8f7f2;stroke:#1a1a1a;stroke-width:1.2;}
+  .labelbox-l1{font-family:'Courier New',Consolas,monospace;font-size:9.5px;fill:#111;font-weight:bold;}
+  .labelbox-l2{font-family:'Courier New',Consolas,monospace;font-size:9.5px;fill:#333;}
+  .labelbox-l3{font-family:Arial,Helvetica,sans-serif;font-size:8.5px;fill:#555;}
+  .bearing-text{
+    font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:bold;
+    fill:var(--pink);paint-order:stroke;stroke:#000;stroke-width:3px;
+  }
+
+  @media (min-width:769px){
+    #app{flex-direction:row;padding-top:48px;}
+    #sidebar{
+      position:relative;top:auto;left:auto;right:auto;bottom:auto;
+      width:300px;flex:0 0 300px;max-height:none;
+      border-right:1px solid var(--border);border-bottom:none;box-shadow:none;
+      transform:none;transition:width .25s ease;overflow:auto;
+    }
+    #sidebar.collapsed{width:0;flex:0 0 0;padding:0;border-right:none;transform:none;overflow:hidden;}
+    #mapwrap{position:relative;top:auto;left:auto;right:auto;bottom:auto;flex:1;}
+    #layerSwitch{bottom:14px;right:14px;}
+    #layerSwitch button{padding:6px 8px;font-size:11px;}
+  }
+
+  @media print{
+    #sidebar,#topbar,#layerSwitch,#floatLinesBtn,#floatMaidenBtn{display:none;}
+    #mapwrap{position:static;}
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button id="menuToggle" title="Mostrar/ocultar menu">☰</button>
+  <h1><span>Mapa de Repetidoras</span></h1>
+</div>
+
+<div id="app">
+  <div id="sidebar">
+    <img id="logo-img" src="logo.png" alt="pu4fos bhmg" onerror="this.style.display='none'">
+    <p id="intro-text">No site Anatel Mosaico, <strong>MMAR Radioamador, Consulta repetidora</strong>, consulte e exporte o arquivo .csv e carregue-o logo abaixo, junto da sua localização, e veja no mapa as repetidoras registradas ao seu redor, com indicativo, frequência, distância geográfica e direção do offset <em>(6m 1MHz, 2m 0,6MHz, 1,25m 1,6MHz, 70cm 5MHz, 33cm 12MHz, 23cm 20MHz)</em>.</p>
+
+    <label>Sua localização (lat, lon)</label>
+    <div style="display:flex;gap:6px;align-items:stretch">
+      <input type="text" id="userloc" placeholder="-19.47384, -43.727628" style="flex:1;min-width:0">
+      <button id="gpsBtn" title="Usar GPS do dispositivo" style="margin-top:0;width:auto;padding:0 10px;font-size:18px;flex:0 0 auto">📍</button>
+    </div>
+    <button id="setuser">Definir minha localização</button>
+
+    <label>Arquivo .csv MMAR-Anatel:</label>
+    <input type="file" id="csvfile" accept=".csv,text/csv">
+    <div id="csvCacheLabel" style="font-size:11px;color:var(--text-dim);margin-top:4px;display:none"></div>
+    <div class="hint">Formato: "Número da Estação";"Indicativo";"Latitude";"Longitude";"Frequência de Operação";"Validade"</div>
+
+    <div id="zoomctrl">
+      <button id="fitall" class="secondary">Ajustar tudo</button>
+    </div>
+
+    <button id="printbtn" class="secondary">🖨️ Imprimir / Salvar PDF</button>
+    <div id="count"></div>
+    <div id="status"></div>
+  </div>
+
+  <div id="mapwrap">
+    <div id="leafletmap"></div>
+    <svg id="overlay"></svg>
+
+    <!-- Botão flutuante toggle linhas -->
+    <div id="floatLinesBtn" title="Mostrar/ocultar linhas de distância">
+      <span class="fl-icon">〰️</span>
+      <input type="checkbox" class="fl-cb" id="showLines" checked>
+    </div>
+
+    <!-- Botão flutuante toggle grade Maidenhead -->
+    <div id="floatMaidenBtn" title="Mostrar/ocultar grade Maidenhead">
+      <span class="fl-icon">🔲</span>
+      <input type="checkbox" class="fl-cb" id="showMaiden">
+    </div>
+
+    <div id="layerSwitch">
+      <button data-layer="escuro" class="active">Escuro</button>
+      <button data-layer="ruas">Ruas</button>
+      <button data-layer="satelite">Satélite</button>
+      <button data-layer="terreno">Terreno</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const LABEL_MIN_ZOOM = 12;
+
+  let stations     = [];
+  let user         = null;
+  let activeIdx    = null;  // índice da repetidora ativa (null = nenhuma)
+
+  const overlay  = document.getElementById('overlay');
+  const statusEl = document.getElementById('status');
+  const countEl  = document.getElementById('count');
+
+  function setStatus(msg, isErr){
+    statusEl.style.color = isErr ? '#e05252' : '#4ade80';
+    statusEl.textContent = msg;
+  }
+
+  /* ================================================================
+     Leaflet
+  ================================================================ */
+  const isMobile = window.innerWidth <= 768;
+  const map = L.map('leafletmap', {zoomControl:false, tap:true})
+               .setView([-19.92,-43.94], isMobile ? 10 : 11);
+  L.control.zoom({position: isMobile ? 'bottomleft' : 'topleft'}).addTo(map);
+
+  /* ---- Camadas ---- */
+  const layers = {
+    escuro:   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+                {maxZoom:19, subdomains:'abcd', attribution:'&copy; OpenStreetMap &copy; CARTO'}),
+    ruas:     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                {maxZoom:19, attribution:'&copy; OpenStreetMap contributors'}),
+    satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                {maxZoom:19, attribution:'Tiles &copy; Esri'}),
+    terreno:  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                {maxZoom:17, attribution:'&copy; OpenTopoMap'})
+  };
+  layers.escuro.addTo(map);
+
+  document.querySelectorAll('#layerSwitch button').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      Object.values(layers).forEach(l=>{ if(map.hasLayer(l)) map.removeLayer(l); });
+      layers[btn.dataset.layer].addTo(map);
+      document.querySelectorAll('#layerSwitch button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      localStorage.setItem(LS_LAYER, btn.dataset.layer);
+    });
+  });
+
+  /* ---- Menu toggle ---- */
+  const sidebar = document.getElementById('sidebar');
+  function setSidebarCollapsed(c){
+    sidebar.classList.toggle('collapsed',c);
+    setTimeout(()=>map.invalidateSize(),260);
+  }
+  document.getElementById('menuToggle').addEventListener('click',()=>{
+    setSidebarCollapsed(!sidebar.classList.contains('collapsed'));
+  });
+  // Menu começa ABERTO em todos os dispositivos
+
+  /* ================================================================
+     localStorage — persiste localização e camada
+  ================================================================ */
+  const LS_LOC   = 'repeater_userloc';
+  const LS_LAYER = 'repeater_layer';
+  const LS_CSV   = 'repeater_csv_text';
+  const LS_CNAME = 'repeater_csv_name';
+
+  // Restaurar localização salva
+  const savedLoc = localStorage.getItem(LS_LOC);
+  if(savedLoc) document.getElementById('userloc').value = savedLoc;
+
+  // Restaurar CSV salvo
+  const csvCacheLabel = document.getElementById('csvCacheLabel');
+  (function restoreCSV(){
+    const savedCSV  = localStorage.getItem(LS_CSV);
+    const savedName = localStorage.getItem(LS_CNAME);
+    if(!savedCSV) return;
+    try{
+      const parsed = parseCSV(savedCSV);
+      if(!parsed.length) return;
+      stations = spreadOverlapping(parsed);
+      setStatus(parsed.length+' repetidora(s) restaurada(s) do cache.');
+      countEl.textContent = stations.length+' estações no mapa';
+      csvCacheLabel.textContent = '📦 Cache: '+(savedName||'csv salvo');
+      csvCacheLabel.style.display = 'block';
+      rebuildMarkers();
+    }catch(e){ /* cache corrompido, ignora */ }
+  })();
+
+  // Restaurar camada salva
+  const savedLayer = localStorage.getItem(LS_LAYER);
+  if(savedLayer && layers[savedLayer]){
+    Object.values(layers).forEach(l=>{ if(map.hasLayer(l)) map.removeLayer(l); });
+    layers[savedLayer].addTo(map);
+    document.querySelectorAll('#layerSwitch button').forEach(b=>{
+      b.classList.toggle('active', b.dataset.layer === savedLayer);
+    });
+  }
+
+  /* ================================================================
+     GPS
+  ================================================================ */
+  document.getElementById('gpsBtn').addEventListener('click', function(){
+    if(!navigator.geolocation){
+      setStatus('Geolocalização não disponível neste navegador.', true); return;
+    }
+    setStatus('Aguardando GPS…');
+    navigator.geolocation.getCurrentPosition(
+      function(pos){
+        const lat = pos.coords.latitude.toFixed(6);
+        const lon = pos.coords.longitude.toFixed(6);
+        const val = lat+', '+lon;
+        document.getElementById('userloc').value = val;
+        localStorage.setItem(LS_LOC, val);
+        user = {lat: parseFloat(lat), lon: parseFloat(lon)};
+        setStatus('Localização GPS obtida.');
+        setuserBtn.classList.add('confirmed');
+        rebuildMarkers(); fitAll(false);
+      },
+      function(err){
+        const msgs = {1:'Permissão negada.',2:'Posição indisponível.',3:'Tempo esgotado.'};
+        setStatus('GPS: '+(msgs[err.code]||err.message), true);
+      },
+      {enableHighAccuracy:true, timeout:15000}
+    );
+  });
+
+  /* ================================================================
+     Botão "Definir localização" — fica cinza após confirmar,
+     volta a dourado ao focar/editar o campo de coordenadas
+  ================================================================ */
+  const setuserBtn   = document.getElementById('setuser');
+  const userlocInput = document.getElementById('userloc');
+
+  function resetSetuserBtn(){ setuserBtn.classList.remove('confirmed'); }
+  userlocInput.addEventListener('focus', resetSetuserBtn);
+  userlocInput.addEventListener('input', resetSetuserBtn);
+
+  /* ---- Botão flutuante de linhas ---- */
+  const showLinesCb = document.getElementById('showLines');
+  // clicar no container (exceto no próprio checkbox) também alterna
+  document.getElementById('floatLinesBtn').addEventListener('click', function(e){
+    if(e.target !== showLinesCb){
+      showLinesCb.checked = !showLinesCb.checked;
+    }
+    renderOverlay();
+  });
+  showLinesCb.addEventListener('change', renderOverlay);
+
+  const showMaidenCb = document.getElementById('showMaiden');
+  document.getElementById('floatMaidenBtn').addEventListener('click', function(e){
+    if(e.target !== showMaidenCb){ showMaidenCb.checked = !showMaidenCb.checked; }
+    renderOverlay();
+  });
+  showMaidenCb.addEventListener('change', renderOverlay);
+
+  /* ---- Clicar no mapa → desativa repetidora ---- */
+  map.on('click', function(){
+    if(activeIdx !== null){
+      activeIdx = null;
+      renderOverlay();
+    }
+  });
+
+  /* ================================================================
+     Ícones SVG
+  ================================================================ */
+  function towerIcon(){
+    const s = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="28" viewBox="0 0 22 28">
+      <line x1="11" y1="4" x2="3"  y2="26" stroke="#e03030" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="11" y1="4" x2="19" y2="26" stroke="#e03030" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="11" y1="4" x2="11" y2="26" stroke="#e03030" stroke-width="1.3"/>
+      <line x1="7"  y1="12" x2="15" y2="12" stroke="#e03030" stroke-width="1.3"/>
+      <line x1="5"  y1="19" x2="17" y2="19" stroke="#e03030" stroke-width="1.3"/>
+      <line x1="11" y1="0"  x2="11" y2="6"  stroke="#cc0000" stroke-width="1.8"/>
+      <line x1="8"  y1="1"  x2="14" y2="1"  stroke="#cc0000" stroke-width="1.8"/>
+      <circle cx="11" cy="0" r="2.5" fill="#ff2222" stroke="#880000" stroke-width="0.5"/>
+    </svg>`;
+    return L.divIcon({
+      className:'',
+      html:`<div style="width:22px;height:28px;cursor:pointer">${s}</div>`,
+      iconSize:[22,28], iconAnchor:[11,26]
+    });
+  }
+
+  function htIcon(){
+    const s = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="30" viewBox="0 0 20 30">
+      <line x1="5" y1="9" x2="2" y2="0" stroke="#222" stroke-width="1.8" stroke-linecap="round"/>
+      <rect x="2" y="7" width="16" height="21" rx="2.5" fill="#111" stroke="#3a3a3a" stroke-width="0.8"/>
+      <rect x="2" y="7" width="16" height="4" rx="2" fill="#1e1e1e"/>
+      <circle cx="15" cy="9.5"  r="1.8" fill="#00dd00"/>
+      <circle cx="15" cy="13.5" r="1.8" fill="#dd0000"/>
+      <rect x="4" y="13" width="9" height="6" rx="1" fill="#1a1a1a"/>
+      <line x1="5" y1="15" x2="12" y2="15" stroke="#333" stroke-width="0.7"/>
+      <line x1="5" y1="17" x2="12" y2="17" stroke="#333" stroke-width="0.7"/>
+      <rect x="4" y="21" width="12" height="6" rx="1" fill="#1c1c1c"/>
+      <circle cx="7"  cy="23" r="1" fill="#444"/>
+      <circle cx="10" cy="23" r="1" fill="#444"/>
+      <circle cx="13" cy="23" r="1" fill="#444"/>
+      <circle cx="7"  cy="26" r="1" fill="#444"/>
+      <circle cx="10" cy="26" r="1" fill="#555"/>
+      <circle cx="13" cy="26" r="1" fill="#444"/>
+    </svg>`;
+    return L.divIcon({
+      className:'',
+      html:`<div style="width:20px;height:30px">${s}</div>`,
+      iconSize:[20,30], iconAnchor:[10,28]
+    });
+  }
+
+  /* ================================================================
+     CSV
+  ================================================================ */
+  /* Converte número no formato brasileiro (1.287,600 ou 147,120) para float */
+  function parseBRNum(s){
+    // Remove ponto de milhar, troca vírgula decimal por ponto
+    return parseFloat(s.trim().replace(/\./g,'').replace(',','.'));
+  }
+
+  /*
+    Detecta grupos de repetidoras com coordenadas idênticas (ou muito próximas,
+    dentro de ~10m) e as espalha em círculo pequeno (~80m de raio por grupo de 2,
+    escalando levemente com o tamanho do grupo).
+    Isso preserva a posição geográfica real para grupos de 1, e torna visíveis e
+    clicáveis individualmente todos os marcadores sobrepostos.
+  */
+  function spreadOverlapping(stList){
+    const PREC  = 4;       // casas decimais para agrupar (~11m de tolerância)
+    const R_DEG = 0.0007;  // raio base em graus (~78m no equador, ~70m em BH)
+
+    const groups = {};
+    stList.forEach((s, i) => {
+      const key = s.lat.toFixed(PREC) + ',' + s.lon.toFixed(PREC);
+      if(!groups[key]) groups[key] = [];
+      groups[key].push(i);
+    });
+
+    Object.values(groups).forEach(idxs => {
+      if(idxs.length < 2) return;
+      // Raio cresce levemente com grupos maiores para não sobrepor
+      const r = R_DEG * (1 + (idxs.length - 2) * 0.15);
+      idxs.forEach((idx, j) => {
+        const angle = (2 * Math.PI * j) / idxs.length - Math.PI / 2;
+        const cosLat = Math.cos(stList[idx].lat * Math.PI / 180) || 0.001;
+        stList[idx].lat = stList[idx].lat + r * Math.sin(angle);
+        stList[idx].lon = stList[idx].lon + (r / cosLat) * Math.cos(angle);
+      });
+    });
+    return stList;
+  }
+
+  function parseCSV(text){
+    const lines = text.split(/\r?\n/).filter(l=>l.trim().length>0);
+    if(lines.length<2) throw new Error('CSV vazio ou sem dados.');
+
+    return lines.slice(1).reduce((acc,line)=>{
+      const m = line.match(/"([^"]*)"/g);
+      if(!m || m.length<4) return acc;
+      const r = m.map(x=>x.slice(1,-1));
+
+      const indicativo = (r[1]||'').trim();
+      let lat = parseFloat(r[2]);
+      let lon = parseFloat(r[3]);
+      if(isNaN(lat)||isNaN(lon)) return acc;
+
+      // Anatel às vezes omite o sinal negativo nas coordenadas.
+      // Todo o território brasileiro tem lat < 0 (sul do equador, exceto extremo norte ~+5°)
+      // e lon < 0 (ocidente). Regras conservadoras para corrigir:
+      //   • lon positiva → sempre errado para o Brasil, negar
+      //   • lat > 6 → acima do extremo norte do Brasil (~5.3°N), claramente invertida, negar
+      if(lon > 0) lon = -lon;
+      if(lat > 6) lat = -lat;
+
+      // Identificar campo de frequência e validade
+      const isDate = s => /^\d{2}\/\d{2}\/\d{4}$/.test(s) || /^\d{4}-\d{2}-\d{2}$/.test(s);
+
+      // Coletar campos de frequência (r[4] em diante, até encontrar data ou fim)
+      let freqRaw = '';
+      for(let i=4; i<r.length; i++){
+        const v = r[i].trim();
+        if(isDate(v)) break;
+        if(v) freqRaw += (freqRaw ? ';' : '') + v;
+      }
+      if(!freqRaw) return acc;
+
+      // Split por ";" para obter cada dupla entrada/saída
+      const pairs = freqRaw
+        .split(';')
+        .map(s => s.replace(/MHz/gi,'').trim())
+        .filter(s => s.includes('/'));
+
+      if(!pairs.length) return acc;
+
+      // Processar cada dupla
+      const freqs = pairs.reduce((fa, pair)=>{
+        const parts = pair.split('/').map(s => parseBRNum(s));
+        const f1 = parts[0], f2 = parts[1];
+        if(isNaN(f1)) return fa;
+        const sign = isNaN(f2) ? '' : (f2>f1 ? '+' : (f2<f1 ? '-' : ''));
+        // Formatar: >= 1000 MHz mostra 4 casas (ex: 1287.600), senão 3
+        const fmt = f1 >= 1000 ? f1.toFixed(3) : f1.toFixed(3);
+        fa.push({freq1: fmt, sign});
+        return fa;
+      },[]);
+
+      if(!freqs.length) return acc;
+      acc.push({indicativo: indicativo||'????', lat, lon, freqs});
+      return acc;
+    },[]);
+  }
+
+  document.getElementById('csvfile').addEventListener('change', function(e){
+    const file=e.target.files[0]; if(!file) return;
+    const reader=new FileReader();
+    reader.onload=function(ev){
+      try{
+        const parsed=parseCSV(ev.target.result);
+        if(!parsed.length){setStatus('Nenhuma linha válida.',true);return;}
+        stations=spreadOverlapping(parsed); activeIdx=null;
+        setStatus(parsed.length+' repetidora(s) carregada(s).');
+        countEl.textContent=stations.length+' estações no mapa';
+        try{
+          localStorage.setItem(LS_CSV, ev.target.result);
+          localStorage.setItem(LS_CNAME, file.name);
+          csvCacheLabel.textContent='📦 Cache: '+file.name;
+          csvCacheLabel.style.display='block';
+        }catch(e){
+          csvCacheLabel.textContent='⚠️ CSV grande demais para o cache.';
+          csvCacheLabel.style.display='block';
+        }
+        rebuildMarkers(); fitAll(false);
+      }catch(err){setStatus('Erro: '+err.message,true);}
+    };
+    reader.readAsText(file,'UTF-8');
+    // Reset do input: garante que selecionar o mesmo arquivo novamente dispara o evento
+    e.target.value = '';
+  });
+
+  document.getElementById('setuser').addEventListener('click', function(){
+    const raw=document.getElementById('userloc').value.trim();
+    const parts=raw.split(',').map(s=>parseFloat(s.trim()));
+    if(parts.length!==2||isNaN(parts[0])||isNaN(parts[1])){
+      setStatus('Formato inválido. Use: -19.47384, -43.727628',true); return;
+    }
+    user={lat:parts[0], lon:parts[1]};
+    setStatus('Localização definida.');
+    localStorage.setItem(LS_LOC, raw);
+    setuserBtn.classList.add('confirmed');
+    rebuildMarkers(); fitAll(false);
+    // menu permanece aberto
+  });
+
+  /* ================================================================
+     Marcadores
+  ================================================================ */
+  let userMarker=null;
+  const stationMarkers=[];
+
+  function rebuildMarkers(){
+    if(userMarker){map.removeLayer(userMarker);userMarker=null;}
+    stationMarkers.forEach(m=>map.removeLayer(m));
+    stationMarkers.length=0;
+
+    if(user){
+      userMarker=L.marker([user.lat,user.lon],{icon:htIcon()}).addTo(map);
+    }
+    stations.forEach((s,i)=>{
+      const m=L.marker([s.lat,s.lon],{icon:towerIcon()}).addTo(map);
+      m.on('click', function(e){
+        L.DomEvent.stopPropagation(e); // impede que o clique chegue ao mapa
+        activeIdx = (activeIdx===i) ? null : i;
+        renderOverlay();
+      });
+      stationMarkers.push(m);
+    });
+    renderOverlay();
+  }
+
+  function fitAll(closeMenu){
+    const pts=stations.map(s=>[s.lat,s.lon]);
+    if(user) pts.push([user.lat,user.lon]);
+    if(!pts.length) return;
+    if(pts.length===1) map.setView(pts[0],14);
+    else map.fitBounds(L.latLngBounds(pts),{padding:[20,20]});
+    if(closeMenu) setSidebarCollapsed(true);
+  }
+
+  document.getElementById('fitall').addEventListener('click',()=>fitAll(true));
+  document.getElementById('printbtn').addEventListener('click',()=>window.print());
+
+  /* ================================================================
+     Cálculos geográficos
+  ================================================================ */
+  function haversineKm(lat1,lon1,lat2,lon2){
+    const R=6371, t=d=>d*Math.PI/180;
+    const a=Math.sin(t((lat2-lat1)/2))**2+Math.cos(t(lat1))*Math.cos(t(lat2))*Math.sin(t((lon2-lon1)/2))**2;
+    return R*2*Math.asin(Math.sqrt(a));
+  }
+
+  /*
+    Azimute verdadeiro de (lat1,lon1) → (lat2,lon2).
+    Fórmula de rumo (bearing) da navegação esférica:
+      θ = atan2( sin(Δλ)·cos(φ2),
+                 cos(φ1)·sin(φ2) − sin(φ1)·cos(φ2)·cos(Δλ) )
+    Resultado normalizado em 0–360°, 0° = Norte, sentido horário.
+    Verificado contra calculadoras online (movable-type.co.uk/scripts/latlong.html).
+  */
+  function bearingDeg(lat1,lon1,lat2,lon2){
+    const t=d=>d*Math.PI/180;
+    const φ1=t(lat1), φ2=t(lat2), Δλ=t(lon2-lon1);
+    const y=Math.sin(Δλ)*Math.cos(φ2);
+    const x=Math.cos(φ1)*Math.sin(φ2)-Math.sin(φ1)*Math.cos(φ2)*Math.cos(Δλ);
+    return ((Math.atan2(y,x)*180/Math.PI)+360)%360;
+  }
+
+  /* ================================================================
+     Anti-sobreposição de caixas
+  ================================================================ */
+  function layoutBoxes(items){
+    const GAP=5;
+    const boxes=items.map(it=>({
+      anchor:it.anchor, x:it.anchor.x+it.ox, y:it.anchor.y+it.oy,
+      w:it.w, h:it.h, data:it.data
+    }));
+    function ov(a,b){
+      return !(a.x+a.w/2+GAP<b.x-b.w/2||a.x-a.w/2-GAP>b.x+b.w/2||
+               a.y+a.h/2+GAP<b.y-b.h/2||a.y-a.h/2-GAP>b.y+b.h/2);
+    }
+    for(let iter=0;iter<500;iter++){
+      let moved=false;
+      for(let a=0;a<boxes.length;a++){
+        for(let b=a+1;b<boxes.length;b++){
+          if(ov(boxes[a],boxes[b])){
+            moved=true;
+            let dx=boxes[b].x-boxes[a].x, dy=boxes[b].y-boxes[a].y;
+            const d=Math.sqrt(dx*dx+dy*dy)||0.01; dx/=d; dy/=d;
+            boxes[a].x-=dx*2; boxes[a].y-=dy*2;
+            boxes[b].x+=dx*2; boxes[b].y+=dy*2;
+          }
+        }
+      }
+      if(!moved) break;
+    }
+    return boxes;
+  }
+
+  function edgePt(box,fx,fy){
+    const dx=fx-box.x, dy=fy-box.y;
+    if(!dx&&!dy) return {x:box.x,y:box.y};
+    const t=Math.min((box.w/2)/Math.abs(dx||1e-9),(box.h/2)/Math.abs(dy||1e-9));
+    return {x:box.x+dx*t,y:box.y+dy*t};
+  }
+
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  /* ================================================================
+     Maidenhead Locator System
+  ================================================================ */
+  function maidenhead(lat, lon, precision){
+    const lonO = lon + 180, latO = lat + 90;
+    const fLon = Math.floor(lonO / 20), fLat = Math.floor(latO / 10);
+    const sLon = Math.floor((lonO % 20) / 2), sLat = Math.floor(latO % 10);
+    const subLon = Math.floor(((lonO % 2) * 60) / 5);
+    const subLat = Math.floor(((latO % 1) * 60) / 2.5);
+    let r = String.fromCharCode(65+fLon) + String.fromCharCode(65+fLat);
+    if(precision >= 2) r += sLon + '' + sLat;
+    if(precision >= 3) r += String.fromCharCode(97+subLon) + String.fromCharCode(97+subLat);
+    return r;
+  }
+
+  function renderMaidenhead(zoom){
+    // Escolhe resolução conforme zoom
+    let dLon, dLat, precision, fontSize, opacity;
+    if(zoom <= 6){
+      dLon=20; dLat=10; precision=1; fontSize=12; opacity=0.55;
+    } else if(zoom <= 10){
+      dLon=2; dLat=1; precision=2; fontSize=11; opacity=0.50;
+    } else {
+      dLon=2/12; dLat=1/24; precision=3; fontSize=10; opacity=0.45;
+      // subsquare = 5'lon × 2.5'lat = 5/60 lon × 2.5/60 lat
+      dLon = 5/60; dLat = 2.5/60;
+    }
+
+    const bounds = map.getBounds();
+    const minLon = Math.floor(bounds.getWest() / dLon) * dLon;
+    const maxLon = bounds.getEast();
+    const minLat = Math.floor(bounds.getSouth() / dLat) * dLat;
+    const maxLat = bounds.getNorth();
+
+    let h = '';
+    const col = `rgba(80,140,255,${opacity})`;
+    const stroke = `rgba(80,140,255,${opacity * 0.7})`;
+
+    // Linhas verticais (longitude)
+    for(let lon = minLon; lon <= maxLon + dLon; lon += dLon){
+      const pA = map.latLngToContainerPoint([bounds.getNorth(), lon]);
+      const pB = map.latLngToContainerPoint([bounds.getSouth(), lon]);
+      h += `<line x1="${pA.x}" y1="${pA.y}" x2="${pB.x}" y2="${pB.y}" stroke="${stroke}" stroke-width="0.7"/>`;
+    }
+    // Linhas horizontais (latitude)
+    for(let lat = minLat; lat <= maxLat + dLat; lat += dLat){
+      const pA = map.latLngToContainerPoint([lat, bounds.getWest()]);
+      const pB = map.latLngToContainerPoint([lat, bounds.getEast()]);
+      h += `<line x1="${pA.x}" y1="${pA.y}" x2="${pB.x}" y2="${pB.y}" stroke="${stroke}" stroke-width="0.7"/>`;
+    }
+
+    // Labels: canto inferior direito de cada célula
+    for(let lon = minLon; lon <= maxLon; lon += dLon){
+      for(let lat = minLat; lat <= maxLat; lat += dLat){
+        // Corner bottom-right = (lon+dLon, lat) em geo → mas clamp nos bounds
+        const labelLon = lon + dLon;
+        const labelLat = lat;
+        if(labelLon > maxLon + dLon || labelLat > maxLat) continue;
+        const p = map.latLngToContainerPoint([labelLat, labelLon]);
+        // inset 3px do canto
+        const tx = p.x - 3, ty = p.y - 3;
+        const label = maidenhead(lat + dLat*0.5, lon + dLon*0.5, precision);
+        h += `<text x="${tx}" y="${ty}" text-anchor="end"
+          font-family="Arial,Helvetica,sans-serif" font-size="${fontSize}px"
+          fill="rgba(80,140,255,${opacity})"
+          paint-order="stroke" stroke="rgba(0,0,0,0.5)" stroke-width="2px"
+          >${esc(label)}</text>`;
+      }
+    }
+    return h;
+  }
+
+  /* ================================================================
+     Renderização do overlay SVG
+  ================================================================ */
+  function renderOverlay(){
+    const size=map.getSize();
+    overlay.setAttribute('width',size.x);
+    overlay.setAttribute('height',size.y);
+    overlay.setAttribute('viewBox',`0 0 ${size.x} ${size.y}`);
+
+    const zoom=map.getZoom();
+    const showLabels = zoom >= LABEL_MIN_ZOOM;
+    const showLines  = showLinesCb.checked;
+    const showMaiden = showMaidenCb.checked;
+
+    const stPts=stations.map(s=>({...s, p:map.latLngToContainerPoint([s.lat,s.lon])}));
+    const uPt=user?map.latLngToContainerPoint([user.lat,user.lon]):null;
+
+    let html='';
+
+    /* ---- Grade Maidenhead (desenhada antes de tudo, fica atrás) ---- */
+    if(showMaiden) html += renderMaidenhead(zoom);
+
+    /* ---- Linhas de distância ---- */
+    if(uPt){
+      if(activeIdx !== null){
+        const s=stPts[activeIdx];
+        html+=`<line class="distline active-line" x1="${uPt.x}" y1="${uPt.y}" x2="${s.p.x}" y2="${s.p.y}"/>`;
+
+        const bearing=bearingDeg(user.lat,user.lon,s.lat,s.lon);
+        const tx=uPt.x+(s.p.x-uPt.x)*0.70;
+        const ty=uPt.y+(s.p.y-uPt.y)*0.70;
+        let lineAngle=Math.atan2(s.p.y-uPt.y, s.p.x-uPt.x)*180/Math.PI;
+        if(lineAngle>90||lineAngle<-90) lineAngle+=180;
+        html+=`<text class="bearing-text"
+          x="${tx}" y="${ty}"
+          transform="rotate(${lineAngle} ${tx} ${ty})"
+          text-anchor="middle" dy="-6">${bearing.toFixed(1)}°</text>`;
+      } else if(showLines){
+        stPts.forEach(s=>{
+          html+=`<line class="distline" x1="${uPt.x}" y1="${uPt.y}" x2="${s.p.x}" y2="${s.p.y}"/>`;
+        });
+      }
+    }
+
+    /* ---- Caixas de label ---- */
+    // Quais estações recebem caixa: todas dentro do zoom mínimo,
+    // + a estação ativa sempre (independente do zoom)
+    const needsBox = stPts.map((_,i) => showLabels || i === activeIdx);
+    if(needsBox.some(Boolean)){
+      const W  = 74;   // largura fixa (cabe "1287.600 +" com folga)
+      const LH = 10;   // altura de cada linha de frequência
+      const OX = 13 + W/2, OY = -13;
+
+      const items = stPts
+        .map((s,i) => {
+          if(!needsBox[i]) return null;
+          const nf  = s.freqs.length;
+          // Altura: 1 linha indicativo (11px) + nf linhas freq (LH cada) + opcional km + padding
+          const km  = uPt ? haversineKm(user.lat,user.lon,s.lat,s.lon) : null;
+          const H   = 6 + 11 + nf*LH + (km!=null ? LH : 0) + 4;
+          return { anchor:s.p, ox:OX, oy:OY, w:W, h:H,
+                   data:{...s, km, idx:i, H} };
+        })
+        .filter(Boolean);
+
+      const boxes = layoutBoxes(items);
+
+      boxes.forEach(box=>{
+        const s  = box.data;
+        const ep = edgePt(box, box.anchor.x, box.anchor.y);
+        const bx = box.x - box.w/2, by = box.y - box.h/2, cx = box.x;
+        html += `<line class="leader" x1="${box.anchor.x}" y1="${box.anchor.y}" x2="${ep.x}" y2="${ep.y}"/>`;
+        html += `<rect class="labelbox-rect" x="${bx}" y="${by}" width="${box.w}" height="${box.h}" rx="4"/>`;
+        // Linha 1: indicativo
+        html += `<text class="labelbox-l1" x="${cx}" y="${by+11}" text-anchor="middle">${esc(s.indicativo)}</text>`;
+        // Linhas 2..N: cada par de frequência
+        s.freqs.forEach((f,fi)=>{
+          const fy = by + 11 + (fi+1)*LH;
+          html += `<text class="labelbox-l2" x="${cx}" y="${fy}" text-anchor="middle">${esc(f.freq1)}${f.sign?' ('+f.sign+')':''}</text>`;
+        });
+        // Última linha: distância km (se usuário definido)
+        if(s.km != null){
+          const ky = by + 11 + s.freqs.length*LH + LH - 1;
+          html += `<text class="labelbox-l3" x="${cx}" y="${ky}" text-anchor="middle">${s.km.toFixed(1)} km</text>`;
+        }
+      });
+    }
+
+    overlay.innerHTML=html;
+  }
+
+  map.on('move zoom resize',renderOverlay);
+  map.whenReady(renderOverlay);
+
+  setStatus('Carregue um CSV e/ou defina sua localização para começar.');
+})();
+</script>
+</body>
+</html>
