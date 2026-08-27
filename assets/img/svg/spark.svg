@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" role="img" aria-label="Early spark-gap transmitter concept">
+<rect width="800" height="300" fill="#0b0b0b"/>
+<rect x="90" y="120" width="120" height="90" rx="6" fill="none" stroke="#d4af37" stroke-width="2"/>
+<text x="150" y="170" fill="#f0d472" font-family="Inter,sans-serif" font-size="13" text-anchor="middle">induction</text>
+<text x="150" y="188" fill="#f0d472" font-family="Inter,sans-serif" font-size="13" text-anchor="middle">coil</text>
+<line x1="210" y1="140" x2="300" y2="140" stroke="#8b8b8b" stroke-width="2"/>
+<line x1="210" y1="190" x2="300" y2="190" stroke="#8b8b8b" stroke-width="2"/>
+<circle cx="315" cy="140" r="7" fill="#8b8b8b"/><circle cx="315" cy="190" r="7" fill="#8b8b8b"/>
+<path d="M322 148 l14 14 l-8 2 l16 12" fill="none" stroke="#f0d472" stroke-width="2"/>
+<text x="360" y="130" fill="#f0d472" font-family="Inter,sans-serif" font-size="13">spark gap</text>
+<line x1="322" y1="140" x2="430" y2="140" stroke="#8b8b8b" stroke-width="2"/>
+<line x1="322" y1="190" x2="430" y2="190" stroke="#8b8b8b" stroke-width="2"/>
+<!-- antenna -->
+<line x1="560" y1="40" x2="560" y2="210" stroke="#d4af37" stroke-width="3"/>
+<line x1="430" y1="140" x2="560" y2="140" stroke="#8b8b8b" stroke-width="2"/>
+<g stroke="#d4af37" stroke-width="2" fill="none" opacity="0.7"><path d="M560 60 q40 20 0 40"/><path d="M560 50 q60 30 0 60"/><path d="M560 40 q80 40 0 80"/></g>
+<line x1="430" y1="190" x2="560" y2="190" stroke="#8b8b8b" stroke-width="2"/>
+<line x1="530" y1="235" x2="590" y2="235" stroke="#8b8b8b" stroke-width="3"/><line x1="560" y1="210" x2="560" y2="235" stroke="#8b8b8b" stroke-width="2"/>
+<text x="600" y="120" fill="#f0d472" font-family="Inter,sans-serif" font-size="13">damped</text>
+<text x="600" y="138" fill="#f0d472" font-family="Inter,sans-serif" font-size="13">waves</text>
+</svg>

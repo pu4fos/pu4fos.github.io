@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Calculadora de Longitud de Antena — Dipolo y Vertical | PU4FOS</title>
+<meta name="description" content="Calcula la longitud de dipolo de media onda y vertical de cuarto de onda para cualquier banda. Introduce una frecuencia y obtén longitudes en metros y pies.">
+<link rel="canonical" href="https://pu4fos.github.io/es/calculators/dipole/">
+<link rel="alternate" hreflang="en" href="https://pu4fos.github.io/calculators/dipole/">
+<link rel="alternate" hreflang="pt-br" href="https://pu4fos.github.io/pt/calculators/dipole/">
+<link rel="alternate" hreflang="es" href="https://pu4fos.github.io/es/calculators/dipole/">
+<link rel="alternate" hreflang="x-default" href="https://pu4fos.github.io/calculators/dipole/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="PU4FOS">
+<meta name="theme-color" content="#090909">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="PU4FOS">
+<meta property="og:title" content="Calculadora de Longitud de Antena — Dipolo y Vertical | PU4FOS">
+<meta property="og:description" content="Calcula la longitud de dipolo de media onda y vertical de cuarto de onda para cualquier banda. Introduce una frecuencia y obtén longitudes en metros y pies.">
+<meta property="og:url" content="https://pu4fos.github.io/es/calculators/dipole/">
+<meta property="og:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<meta property="og:image:alt" content="PU4FOS">
+<meta property="og:locale" content="es_ES">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Calculadora de Longitud de Antena — Dipolo y Vertical | PU4FOS">
+<meta name="twitter:description" content="Calcula la longitud de dipolo de media onda y vertical de cuarto de onda para cualquier banda. Introduce una frecuencia y obtén longitudes en metros y pies.">
+<meta name="twitter:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<link rel="icon" type="image/png" href="/assets/img/logo.png">
+<link rel="apple-touch-icon" href="/assets/img/logo.png">
+<link rel="preconnect" href="https://www.googletagmanager.com">
+<link rel="preconnect" href="https://pagead2.googlesyndication.com">
+<!-- Consent Mode v2 defaults (set before analytics/ads): analytics + non-personalized ads work; consent adds personalization -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{
+    'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied',
+    'analytics_storage':'granted','wait_for_update':2000
+  });
+  gtag('set','url_passthrough',true);
+  gtag('set','ads_data_redaction',true);
+</script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R2BSZ7PX74"></script>
+<script>gtag('js', new Date());gtag('config','G-R2BSZ7PX74');</script>
+<!-- Google AdSense -->
+<meta name="google-adsense-account" content="ca-pub-2979531486195420">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2979531486195420" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/assets/css/style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://pu4fos.github.io/#website", "url": "https://pu4fos.github.io/", "name": "PU4FOS", "description": "Amateur radio station, tools and knowledge base by PU4FOS.", "inLanguage": "es"}, {"@type": "Person", "@id": "https://pu4fos.github.io/#person", "name": "Fernando (PU4FOS)", "jobTitle": "Amateur radio operator", "url": "https://pu4fos.github.io/", "address": {"@type": "PostalAddress", "addressLocality": "Belo Horizonte", "addressRegion": "MG", "addressCountry": "BR"}}, {"@type": "WebPage", "@id": "https://pu4fos.github.io/es/calculators/dipole/#webpage", "url": "https://pu4fos.github.io/es/calculators/dipole/", "name": "Calculadora de Longitud de Antena — Dipolo y Vertical | PU4FOS", "description": "Calcula la longitud de dipolo de media onda y vertical de cuarto de onda para cualquier banda. Introduce una frecuencia y obtén longitudes en metros y pies.", "isPartOf": {"@id": "https://pu4fos.github.io/#website"}, "inLanguage": "es"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Inicio", "item": "https://pu4fos.github.io/es/"}, {"@type": "ListItem", "position": 2, "name": "Calculadoras", "item": "https://pu4fos.github.io/es/calculators/"}, {"@type": "ListItem", "position": 3, "name": "Calculadora de longitud de antena", "item": "https://pu4fos.github.io/es/calculators/dipole/"}]}]}</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Saltar al contenido</a>
+<header class="site-header">
+<div class="container nav">
+<a class="brand" href="/es/"><img src="/assets/img/logo.png" alt="PU4FOS logo" width="38" height="38"><span>PU4FOS</span></a>
+<nav class="nav-links" aria-label="Primary"><a href="/es/">Inicio</a><a href="/es/tools/">Herramientas</a><a href="/es/technical/">Aprender</a><a href="/es/glossary/">Glosario</a><a href="/es/history/">Historia</a><a href="/es/bibliography/">Libros</a><a href="/es/about/">Acerca</a></nav>
+<div class="nav-right">
+<div class="lang-switch" aria-label="Language"><a  href="/calculators/dipole/" hreflang="en">EN</a><a  href="/pt/calculators/dipole/" hreflang="pt-br">PT</a><a class="active" href="/es/calculators/dipole/" hreflang="es">ES</a></div>
+<button class="menu-btn" id="menu-btn" aria-label="Menú" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span><span></span></button>
+</div>
+</div>
+<nav class="mobile-menu" id="mobile-menu" aria-label="Mobile"><a href="/es/">Inicio</a><a href="/es/tools/">Herramientas</a><a href="/es/technical/">Aprender</a><a href="/es/glossary/">Glosario</a><a href="/es/history/">Historia</a><a href="/es/bibliography/">Libros</a><a href="/es/about/">Acerca</a></nav>
+</header>
+<nav class="crumb container" aria-label="Breadcrumb">Estás en: <a href="/es/">Inicio</a> <span style="opacity:.5">/</span> <a href="/es/calculators/">Calculadoras</a> <span style="opacity:.5">/</span> <span>Calculadora de longitud de antena</span></nav><main id="main"><section class="section"><div class="container prose"><h1>Calculadora de longitud de antena</h1><p class="lead">Introduce tu frecuencia de operación. La calculadora da un dipolo de media onda (cada tramo es la mitad del total) y una vertical de cuarto de onda, usando un factor de velocidad de 0,95 para hilo aislado. Recorta para sintonizar — la longitud real depende de la altura y el entorno.</p><div class="calc">
+<div class="row two">
+<div><label for="f">Frecuencia (MHz)</label><input type="number" id="f" value="14.100" step="0.001" min="0.1" inputmode="decimal"></div>
+<div><label for="vf">Factor de velocidad</label><input type="number" id="vf" value="0.95" step="0.01" min="0.5" max="1"></div>
+</div>
+<div class="result"><div class="lbl">Longitud total del dipolo</div><div class="big" id="r_total">—</div></div>
+<div class="row two" style="margin-top:12px">
+<div class="result"><div class="lbl">Cada tramo del dipolo</div><div class="big" id="r_leg">—</div></div>
+<div class="result"><div class="lbl">Vertical de cuarto de onda</div><div class="big" id="r_vert">—</div></div>
+</div>
+<p class="note">Fórmula: dipolo ≈ 300 ÷ f × 0,5 × FV · vertical ≈ 300 ÷ f × 0,25 × FV.</p>
+</div>
+<script>
+(function(){
+ function fmt(m){return m.toFixed(2)+' m / '+(m*3.28084).toFixed(2)+' ft';}
+ function calc(){
+  var f=parseFloat(document.getElementById('f').value),vf=parseFloat(document.getElementById('vf').value);
+  if(!(f>0)||!(vf>0)){return;}
+  var half=300/f*0.5*vf, leg=half/2, q=300/f*0.25*vf;
+  document.getElementById('r_total').textContent=fmt(half);
+  document.getElementById('r_leg').textContent=fmt(leg);
+  document.getElementById('r_vert').textContent=fmt(q);
+ }
+ ['f','vf'].forEach(function(id){document.getElementById(id).addEventListener('input',calc);});
+ calc();
+})();
+</script><div class="ad-slot" aria-hidden="true"><small>Publicidad</small>
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2979531486195420" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div>
+</div></section></main><footer class="site-footer">
+<div class="container">
+<div class="footer-grid">
+<div>
+<h4>PU4FOS</h4>
+<p>Estación de radioaficionado PU4FOS — Belo Horizonte, Brasil.</p>
+<p><a href="https://www.qrz.com/db/PU4FOS" rel="noopener" target="_blank">QRZ · PU4FOS</a></p>
+</div>
+<div>
+<h4>Explorar</h4>
+<a href="/es/technical/">Biblioteca técnica</a>
+<a href="/es/glossary/">Glosario</a>
+<a href="/es/history/">Historia</a>
+<a href="/es/bibliography/">Bibliografía</a>
+<a href="/es/calculators/">Calculadoras</a>
+</div>
+<div>
+<h4>Legal e info</h4>
+<a href="/es/about/">Acerca de</a>
+<a href="/es/contact/">Contacto</a>
+<a href="/es/privacy/">Política de Privacidad</a>
+<a href="/es/terms/">Términos de Uso</a>
+</div>
+</div>
+<div class="footer-bottom">
+<span>© 2026 PU4FOS. Todos los derechos reservados.</span>
+<button type="button" data-manage-consent>Gestionar preferencias de privacidad</button>
+</div>
+</div>
+</footer>
+<div id="consent" role="dialog" aria-live="polite" aria-label="Preferencias de privacidad">
+<div class="cw">
+<p>Usamos cookies y tecnologías similares para analítica y publicidad. La analítica y los anuncios no personalizados funcionan igualmente; aceptar también habilita anuncios personalizados. Consulta nuestra <a href="/es/privacy/">Política de Privacidad</a>.</p>
+<div class="btns">
+<button class="manage" id="consent-manage" type="button">Gestionar</button>
+<button class="reject" id="consent-reject" type="button">Rechazar</button>
+<button class="accept" id="consent-accept" type="button">Aceptar todo</button>
+</div>
+</div>
+</div>
+<div class="consent-modal" id="consent-modal" role="dialog" aria-modal="true" aria-label="Preferencias de privacidad">
+<div class="box">
+<h3>Preferencias de privacidad</h3>
+<div class="opt"><div><strong>Estrictamente necesario</strong><small>Necesario para el sitio y la medición básica. Siempre activo.</small></div>
+<label class="switch"><input type="checkbox" checked disabled><span class="sl"></span></label></div>
+<div class="opt"><div><strong>Publicidad personalizada</strong><small>Permitir anuncios y contenido adaptados a ti.</small></div>
+<label class="switch"><input type="checkbox" id="cm-ads"><span class="sl"></span></label></div>
+<div class="btns" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+<button class="reject" id="cm-cancel" type="button" style="padding:9px 16px;border-radius:10px;background:transparent;border:1px solid var(--line-soft);color:var(--muted);cursor:pointer">Cancelar</button>
+<button class="accept" id="cm-save" type="button" style="padding:9px 16px;border-radius:10px;background:var(--gold);border:1px solid var(--gold);color:#111;font-weight:700;cursor:pointer">Guardar</button>
+</div>
+</div>
+</div>
+<script src="/assets/js/consent.js" defer></script>
+<script src="/assets/js/main.js" defer></script>
+</body>
+</html>

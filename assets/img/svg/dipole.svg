@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 300" role="img" aria-label="Half-wave dipole antenna">
+<rect width="800" height="300" fill="#0b0b0b"/>
+<line x1="120" y1="150" x2="380" y2="150" stroke="#d4af37" stroke-width="5"/>
+<line x1="420" y1="150" x2="680" y2="150" stroke="#d4af37" stroke-width="5"/>
+<circle cx="380" cy="150" r="5" fill="#f0d472"/><circle cx="420" cy="150" r="5" fill="#f0d472"/>
+<path d="M395 150 L395 220 M405 150 L405 220" stroke="#8b8b8b" stroke-width="2"/>
+<path d="M395 220 Q400 235 405 220" fill="none" stroke="#8b8b8b" stroke-width="2"/>
+<line x1="400" y1="235" x2="400" y2="280" stroke="#8b8b8b" stroke-width="3"/>
+<text x="380" y="278" fill="#8b8b8b" font-family="Inter,sans-serif" font-size="13">feedline (50 Ω)</text>
+<path d="M120 130 H380" stroke="#f0d472" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="210" y="122" fill="#f0d472" font-family="Inter,sans-serif" font-size="14">λ / 4</text>
+<path d="M420 130 H680" stroke="#f0d472" stroke-width="1" stroke-dasharray="4 4"/>
+<text x="530" y="122" fill="#f0d472" font-family="Inter,sans-serif" font-size="14">λ / 4</text>
+<path d="M120 96 H680" stroke="#d4af37" stroke-width="1"/><text x="360" y="90" fill="#d4af37" font-family="Inter,sans-serif" font-size="15">total ≈ λ / 2</text>
+<!-- current distribution -->
+<path d="M120 150 Q400 60 680 150" fill="none" stroke="rgba(240,212,114,.5)" stroke-width="2"/>
+<text x="335" y="185" fill="#b7b7b7" font-family="Inter,sans-serif" font-size="12">current</text>
+</svg>

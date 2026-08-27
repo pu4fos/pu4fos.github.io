@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Propagação de Rádio — Como os Sinais Viajam pelo Mundo</title>
+<meta name="description" content="Como os sinais de radioamador viajam: onda terrestre, visada direta e salto ionosférico. Conheça a ionosfera, o ciclo solar e por que as faixas abrem e">
+<link rel="canonical" href="https://pu4fos.github.io/pt/technical/propagation/">
+<link rel="alternate" hreflang="en" href="https://pu4fos.github.io/technical/propagation/">
+<link rel="alternate" hreflang="pt-br" href="https://pu4fos.github.io/pt/technical/propagation/">
+<link rel="alternate" hreflang="es" href="https://pu4fos.github.io/es/technical/propagation/">
+<link rel="alternate" hreflang="x-default" href="https://pu4fos.github.io/technical/propagation/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="PU4FOS">
+<meta name="theme-color" content="#090909">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="PU4FOS">
+<meta property="og:title" content="Propagação de Rádio — Como os Sinais Viajam pelo Mundo">
+<meta property="og:description" content="Como os sinais de radioamador viajam: onda terrestre, visada direta e salto ionosférico. Conheça a ionosfera, o ciclo solar e por que as faixas abrem e">
+<meta property="og:url" content="https://pu4fos.github.io/pt/technical/propagation/">
+<meta property="og:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<meta property="og:image:alt" content="PU4FOS">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Propagação de Rádio — Como os Sinais Viajam pelo Mundo">
+<meta name="twitter:description" content="Como os sinais de radioamador viajam: onda terrestre, visada direta e salto ionosférico. Conheça a ionosfera, o ciclo solar e por que as faixas abrem e">
+<meta name="twitter:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<link rel="icon" type="image/png" href="/assets/img/logo.png">
+<link rel="apple-touch-icon" href="/assets/img/logo.png">
+<link rel="preconnect" href="https://www.googletagmanager.com">
+<link rel="preconnect" href="https://pagead2.googlesyndication.com">
+<!-- Consent Mode v2 defaults (set before analytics/ads): analytics + non-personalized ads work; consent adds personalization -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{
+    'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied',
+    'analytics_storage':'granted','wait_for_update':2000
+  });
+  gtag('set','url_passthrough',true);
+  gtag('set','ads_data_redaction',true);
+</script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R2BSZ7PX74"></script>
+<script>gtag('js', new Date());gtag('config','G-R2BSZ7PX74');</script>
+<!-- Google AdSense -->
+<meta name="google-adsense-account" content="ca-pub-2979531486195420">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2979531486195420" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/assets/css/style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://pu4fos.github.io/#website", "url": "https://pu4fos.github.io/", "name": "PU4FOS", "description": "Amateur radio station, tools and knowledge base by PU4FOS.", "inLanguage": "pt-BR"}, {"@type": "Person", "@id": "https://pu4fos.github.io/#person", "name": "Fernando (PU4FOS)", "jobTitle": "Amateur radio operator", "url": "https://pu4fos.github.io/", "address": {"@type": "PostalAddress", "addressLocality": "Belo Horizonte", "addressRegion": "MG", "addressCountry": "BR"}}, {"@type": "Article", "@id": "https://pu4fos.github.io/pt/technical/propagation/#webpage", "url": "https://pu4fos.github.io/pt/technical/propagation/", "name": "Propagação de Rádio — Como os Sinais Viajam pelo Mundo", "description": "Como os sinais de radioamador viajam: onda terrestre, visada direta e salto ionosférico. Conheça a ionosfera, o ciclo solar e por que as faixas abrem e", "isPartOf": {"@id": "https://pu4fos.github.io/#website"}, "inLanguage": "pt-BR"}, {"@type": "Article", "headline": "Propagação", "description": "Como os sinais de radioamador viajam: onda terrestre, visada direta e salto ionosférico. Conheça a ionosfera, o ciclo solar e por que as faixas abrem e", "author": {"@id": "https://pu4fos.github.io/#person"}, "publisher": {"@id": "https://pu4fos.github.io/#person"}, "datePublished": "2026-03-01", "dateModified": "2026-03-01", "mainEntityOfPage": "https://pu4fos.github.io/pt/technical/propagation/", "image": "https://pu4fos.github.io/assets/img/logo.png", "inLanguage": "pt-BR"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Início", "item": "https://pu4fos.github.io/pt/"}, {"@type": "ListItem", "position": 2, "name": "Biblioteca técnica", "item": "https://pu4fos.github.io/pt/technical/"}, {"@type": "ListItem", "position": 3, "name": "Propagação", "item": "https://pu4fos.github.io/pt/technical/propagation/"}]}]}</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Pular para o conteúdo</a>
+<header class="site-header">
+<div class="container nav">
+<a class="brand" href="/pt/"><img src="/assets/img/logo.png" alt="PU4FOS logo" width="38" height="38"><span>PU4FOS</span></a>
+<nav class="nav-links" aria-label="Primary"><a href="/pt/">Início</a><a href="/pt/tools/">Ferramentas</a><a href="/pt/technical/">Aprender</a><a href="/pt/glossary/">Glossário</a><a href="/pt/history/">História</a><a href="/pt/bibliography/">Livros</a><a href="/pt/about/">Sobre</a></nav>
+<div class="nav-right">
+<div class="lang-switch" aria-label="Language"><a  href="/technical/propagation/" hreflang="en">EN</a><a class="active" href="/pt/technical/propagation/" hreflang="pt-br">PT</a><a  href="/es/technical/propagation/" hreflang="es">ES</a></div>
+<button class="menu-btn" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span><span></span></button>
+</div>
+</div>
+<nav class="mobile-menu" id="mobile-menu" aria-label="Mobile"><a href="/pt/">Início</a><a href="/pt/tools/">Ferramentas</a><a href="/pt/technical/">Aprender</a><a href="/pt/glossary/">Glossário</a><a href="/pt/history/">História</a><a href="/pt/bibliography/">Livros</a><a href="/pt/about/">Sobre</a></nav>
+</header>
+<nav class="crumb container" aria-label="Breadcrumb">Você está em: <a href="/pt/">Início</a> <span style="opacity:.5">/</span> <a href="/pt/technical/">Biblioteca técnica</a> <span style="opacity:.5">/</span> <span>Propagação</span></nav><main id="main"><section class="section"><div class="container prose"><h1>Propagação</h1>
+<p>Propagação é o estudo de como seu sinal vai daqui até lá. A mesma potência pode alcançar a cidade vizinha ou o outro lado do planeta, dependendo da frequência, da hora do dia e do estado do Sol.</p>
+<figure><img src="/assets/img/svg/propagation.svg" alt="Diagrama de propagação por salto ionosférico" loading="lazy" width="800" height="400"></figure>
+<h2>Três formas de o sinal viajar</h2>
+<p>A <strong>onda terrestre</strong> acompanha a superfície da Terra e domina em baixas frequências e curtas distâncias. A <strong>visada direta</strong> reina em VHF/UHF: o sinal segue em trajetos quase retos, então o alcance depende da altura da antena e dos obstáculos. A <strong>onda ionosférica (salto)</strong> é a mágica do HF: a ionosfera curva os sinais de volta à Terra, permitindo contatos mundiais com potência modesta.</p>
+<h2>A ionosfera</h2>
+<p>Bem acima de nós, a radiação solar ioniza a alta atmosfera em camadas (D, E, F). A <strong>camada F</strong> refrata os sinais de HF de volta; um sinal pode ricochetear entre ionosfera e solo em <em>saltos</em> sucessivos, cruzando oceanos. Como a ionização depende da luz solar, a propagação muda entre dia e noite e segue o <strong>ciclo solar</strong> de cerca de 11 anos: perto do máximo solar, as faixas altas (10, 12, 15 m) ganham vida.</p>
+<h2>Por que as faixas 'abrem' e 'fecham'</h2>
+<p>A cada momento existe uma frequência máxima que a ionosfera ainda reflete — a <strong>MUF</strong> (Frequência Máxima Utilizável). Acima dela, os sinais atravessam para o espaço; abaixo da <strong>LUF</strong>, são absorvidos. O operador aprende a ler as faixas, perseguir a <strong>linha cinzenta</strong> ao amanhecer e ao anoitecer e aproveitar as breves aberturas de <strong>E esporádico</strong> em VHF.</p>
+<div class="ad-slot" aria-hidden="true"><small>Publicidade</small>
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2979531486195420" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div>
+</div></section></main><footer class="site-footer">
+<div class="container">
+<div class="footer-grid">
+<div>
+<h4>PU4FOS</h4>
+<p>Estação de radioamador PU4FOS — Belo Horizonte, Brasil.</p>
+<p><a href="https://www.qrz.com/db/PU4FOS" rel="noopener" target="_blank">QRZ · PU4FOS</a></p>
+</div>
+<div>
+<h4>Explorar</h4>
+<a href="/pt/technical/">Biblioteca técnica</a>
+<a href="/pt/glossary/">Glossário</a>
+<a href="/pt/history/">História</a>
+<a href="/pt/bibliography/">Bibliografia</a>
+<a href="/pt/calculators/">Calculadoras</a>
+</div>
+<div>
+<h4>Legal e info</h4>
+<a href="/pt/about/">Sobre</a>
+<a href="/pt/contact/">Contato</a>
+<a href="/pt/privacy/">Política de Privacidade</a>
+<a href="/pt/terms/">Termos de Uso</a>
+</div>
+</div>
+<div class="footer-bottom">
+<span>© 2026 PU4FOS. Todos os direitos reservados.</span>
+<button type="button" data-manage-consent>Gerenciar preferências de privacidade</button>
+</div>
+</div>
+</footer>
+<div id="consent" role="dialog" aria-live="polite" aria-label="Preferências de privacidade">
+<div class="cw">
+<p>Usamos cookies e tecnologias semelhantes para análise e publicidade. A análise e os anúncios não personalizados funcionam de qualquer forma; aceitar também habilita anúncios personalizados. Veja nossa <a href="/pt/privacy/">Política de Privacidade</a>.</p>
+<div class="btns">
+<button class="manage" id="consent-manage" type="button">Gerenciar</button>
+<button class="reject" id="consent-reject" type="button">Recusar</button>
+<button class="accept" id="consent-accept" type="button">Aceitar tudo</button>
+</div>
+</div>
+</div>
+<div class="consent-modal" id="consent-modal" role="dialog" aria-modal="true" aria-label="Preferências de privacidade">
+<div class="box">
+<h3>Preferências de privacidade</h3>
+<div class="opt"><div><strong>Estritamente necessário</strong><small>Necessário para o site e medição básica. Sempre ativo.</small></div>
+<label class="switch"><input type="checkbox" checked disabled><span class="sl"></span></label></div>
+<div class="opt"><div><strong>Publicidade personalizada</strong><small>Permitir anúncios e conteúdo adaptados a você.</small></div>
+<label class="switch"><input type="checkbox" id="cm-ads"><span class="sl"></span></label></div>
+<div class="btns" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+<button class="reject" id="cm-cancel" type="button" style="padding:9px 16px;border-radius:10px;background:transparent;border:1px solid var(--line-soft);color:var(--muted);cursor:pointer">Cancelar</button>
+<button class="accept" id="cm-save" type="button" style="padding:9px 16px;border-radius:10px;background:var(--gold);border:1px solid var(--gold);color:#111;font-weight:700;cursor:pointer">Salvar</button>
+</div>
+</div>
+</div>
+<script src="/assets/js/consent.js" defer></script>
+<script src="/assets/js/main.js" defer></script>
+</body>
+</html>

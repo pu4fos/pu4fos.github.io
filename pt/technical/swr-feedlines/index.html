@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ROE e Linhas de Transmissão — Impedância, Coaxial e Casamento</title>
+<meta name="description" content="O que a ROE realmente significa, como funcionam o cabo coaxial e o casamento de impedância, e por que 50 ohms importa. Conceitos práticos de casamento de">
+<link rel="canonical" href="https://pu4fos.github.io/pt/technical/swr-feedlines/">
+<link rel="alternate" hreflang="en" href="https://pu4fos.github.io/technical/swr-feedlines/">
+<link rel="alternate" hreflang="pt-br" href="https://pu4fos.github.io/pt/technical/swr-feedlines/">
+<link rel="alternate" hreflang="es" href="https://pu4fos.github.io/es/technical/swr-feedlines/">
+<link rel="alternate" hreflang="x-default" href="https://pu4fos.github.io/technical/swr-feedlines/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="author" content="PU4FOS">
+<meta name="theme-color" content="#090909">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="PU4FOS">
+<meta property="og:title" content="ROE e Linhas de Transmissão — Impedância, Coaxial e Casamento">
+<meta property="og:description" content="O que a ROE realmente significa, como funcionam o cabo coaxial e o casamento de impedância, e por que 50 ohms importa. Conceitos práticos de casamento de">
+<meta property="og:url" content="https://pu4fos.github.io/pt/technical/swr-feedlines/">
+<meta property="og:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<meta property="og:image:alt" content="PU4FOS">
+<meta property="og:locale" content="pt_BR">
+<meta property="og:locale:alternate" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ROE e Linhas de Transmissão — Impedância, Coaxial e Casamento">
+<meta name="twitter:description" content="O que a ROE realmente significa, como funcionam o cabo coaxial e o casamento de impedância, e por que 50 ohms importa. Conceitos práticos de casamento de">
+<meta name="twitter:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<link rel="icon" type="image/png" href="/assets/img/logo.png">
+<link rel="apple-touch-icon" href="/assets/img/logo.png">
+<link rel="preconnect" href="https://www.googletagmanager.com">
+<link rel="preconnect" href="https://pagead2.googlesyndication.com">
+<!-- Consent Mode v2 defaults (set before analytics/ads): analytics + non-personalized ads work; consent adds personalization -->
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('consent','default',{
+    'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied',
+    'analytics_storage':'granted','wait_for_update':2000
+  });
+  gtag('set','url_passthrough',true);
+  gtag('set','ads_data_redaction',true);
+</script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R2BSZ7PX74"></script>
+<script>gtag('js', new Date());gtag('config','G-R2BSZ7PX74');</script>
+<!-- Google AdSense -->
+<meta name="google-adsense-account" content="ca-pub-2979531486195420">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2979531486195420" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="/assets/css/style.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://pu4fos.github.io/#website", "url": "https://pu4fos.github.io/", "name": "PU4FOS", "description": "Amateur radio station, tools and knowledge base by PU4FOS.", "inLanguage": "pt-BR"}, {"@type": "Person", "@id": "https://pu4fos.github.io/#person", "name": "Fernando (PU4FOS)", "jobTitle": "Amateur radio operator", "url": "https://pu4fos.github.io/", "address": {"@type": "PostalAddress", "addressLocality": "Belo Horizonte", "addressRegion": "MG", "addressCountry": "BR"}}, {"@type": "Article", "@id": "https://pu4fos.github.io/pt/technical/swr-feedlines/#webpage", "url": "https://pu4fos.github.io/pt/technical/swr-feedlines/", "name": "ROE e Linhas de Transmissão — Impedância, Coaxial e Casamento", "description": "O que a ROE realmente significa, como funcionam o cabo coaxial e o casamento de impedância, e por que 50 ohms importa. Conceitos práticos de casamento de", "isPartOf": {"@id": "https://pu4fos.github.io/#website"}, "inLanguage": "pt-BR"}, {"@type": "Article", "headline": "ROE e linhas", "description": "O que a ROE realmente significa, como funcionam o cabo coaxial e o casamento de impedância, e por que 50 ohms importa. Conceitos práticos de casamento de", "author": {"@id": "https://pu4fos.github.io/#person"}, "publisher": {"@id": "https://pu4fos.github.io/#person"}, "datePublished": "2026-03-01", "dateModified": "2026-03-01", "mainEntityOfPage": "https://pu4fos.github.io/pt/technical/swr-feedlines/", "image": "https://pu4fos.github.io/assets/img/logo.png", "inLanguage": "pt-BR"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Início", "item": "https://pu4fos.github.io/pt/"}, {"@type": "ListItem", "position": 2, "name": "Biblioteca técnica", "item": "https://pu4fos.github.io/pt/technical/"}, {"@type": "ListItem", "position": 3, "name": "ROE e linhas", "item": "https://pu4fos.github.io/pt/technical/swr-feedlines/"}]}]}</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Pular para o conteúdo</a>
+<header class="site-header">
+<div class="container nav">
+<a class="brand" href="/pt/"><img src="/assets/img/logo.png" alt="PU4FOS logo" width="38" height="38"><span>PU4FOS</span></a>
+<nav class="nav-links" aria-label="Primary"><a href="/pt/">Início</a><a href="/pt/tools/">Ferramentas</a><a href="/pt/technical/">Aprender</a><a href="/pt/glossary/">Glossário</a><a href="/pt/history/">História</a><a href="/pt/bibliography/">Livros</a><a href="/pt/about/">Sobre</a></nav>
+<div class="nav-right">
+<div class="lang-switch" aria-label="Language"><a  href="/technical/swr-feedlines/" hreflang="en">EN</a><a class="active" href="/pt/technical/swr-feedlines/" hreflang="pt-br">PT</a><a  href="/es/technical/swr-feedlines/" hreflang="es">ES</a></div>
+<button class="menu-btn" id="menu-btn" aria-label="Menu" aria-expanded="false" aria-controls="mobile-menu"><span></span><span></span><span></span></button>
+</div>
+</div>
+<nav class="mobile-menu" id="mobile-menu" aria-label="Mobile"><a href="/pt/">Início</a><a href="/pt/tools/">Ferramentas</a><a href="/pt/technical/">Aprender</a><a href="/pt/glossary/">Glossário</a><a href="/pt/history/">História</a><a href="/pt/bibliography/">Livros</a><a href="/pt/about/">Sobre</a></nav>
+</header>
+<nav class="crumb container" aria-label="Breadcrumb">Você está em: <a href="/pt/">Início</a> <span style="opacity:.5">/</span> <a href="/pt/technical/">Biblioteca técnica</a> <span style="opacity:.5">/</span> <span>ROE e linhas</span></nav><main id="main"><section class="section"><div class="container prose"><h1>ROE e linhas</h1>
+<p>Entre o rádio e a antena está a <strong>linha de transmissão</strong>, e o quão bem tudo está casado decide quanta potência de fato irradia. É aqui que entra o famoso número <strong>ROE</strong>.</p>
+<h2>Impedância e o mundo dos 50 ohms</h2>
+<p>Rádios, coaxial e a maioria das antenas são construídos em torno de uma impedância de <strong>50 ohms</strong>. Quando a impedância da antena na frequência de operação também parece 50 ohms, a energia flui bem. Quando não, parte da potência reflete de volta pela linha, formando ondas estacionárias.</p>
+<h2>Lendo a ROE</h2>
+<p>A <strong>ROE</strong> (Relação de Onda Estacionária) mede esse descasamento. O casamento perfeito é <strong>1:1</strong>; a maioria dos rádios opera bem abaixo de <strong>1,5:1</strong> e reduz a potência para se proteger acima de cerca de <strong>2:1</strong> ou <strong>3:1</strong>. ROE alta é sintoma, não doença — costuma indicar antena com comprimento errado, conector ruim ou água no coaxial.</p>
+<h2>Perda no coaxial e casamento</h2>
+<p>O cabo coaxial não é sem perdas: cabos finos e frequências altas desperdiçam mais sinal em calor, e essa perda <em>esconde</em> a ROE alta na estação. Escolha bom cabo, mantenha lances curtos em VHF/UHF e use um <strong>acoplador de antena</strong> apenas para satisfazer o rádio — lembre que ele não conserta a antena, só apresenta ao rádio uma carga de 50 ohms. A cura real é uma antena ressonante na sua faixa.</p>
+<div class="ad-slot" aria-hidden="true"><small>Publicidade</small>
+<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-2979531486195420" data-ad-slot="auto" data-ad-format="auto" data-full-width-responsive="true"></ins>
+<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script></div>
+</div></section></main><footer class="site-footer">
+<div class="container">
+<div class="footer-grid">
+<div>
+<h4>PU4FOS</h4>
+<p>Estação de radioamador PU4FOS — Belo Horizonte, Brasil.</p>
+<p><a href="https://www.qrz.com/db/PU4FOS" rel="noopener" target="_blank">QRZ · PU4FOS</a></p>
+</div>
+<div>
+<h4>Explorar</h4>
+<a href="/pt/technical/">Biblioteca técnica</a>
+<a href="/pt/glossary/">Glossário</a>
+<a href="/pt/history/">História</a>
+<a href="/pt/bibliography/">Bibliografia</a>
+<a href="/pt/calculators/">Calculadoras</a>
+</div>
+<div>
+<h4>Legal e info</h4>
+<a href="/pt/about/">Sobre</a>
+<a href="/pt/contact/">Contato</a>
+<a href="/pt/privacy/">Política de Privacidade</a>
+<a href="/pt/terms/">Termos de Uso</a>
+</div>
+</div>
+<div class="footer-bottom">
+<span>© 2026 PU4FOS. Todos os direitos reservados.</span>
+<button type="button" data-manage-consent>Gerenciar preferências de privacidade</button>
+</div>
+</div>
+</footer>
+<div id="consent" role="dialog" aria-live="polite" aria-label="Preferências de privacidade">
+<div class="cw">
+<p>Usamos cookies e tecnologias semelhantes para análise e publicidade. A análise e os anúncios não personalizados funcionam de qualquer forma; aceitar também habilita anúncios personalizados. Veja nossa <a href="/pt/privacy/">Política de Privacidade</a>.</p>
+<div class="btns">
+<button class="manage" id="consent-manage" type="button">Gerenciar</button>
+<button class="reject" id="consent-reject" type="button">Recusar</button>
+<button class="accept" id="consent-accept" type="button">Aceitar tudo</button>
+</div>
+</div>
+</div>
+<div class="consent-modal" id="consent-modal" role="dialog" aria-modal="true" aria-label="Preferências de privacidade">
+<div class="box">
+<h3>Preferências de privacidade</h3>
+<div class="opt"><div><strong>Estritamente necessário</strong><small>Necessário para o site e medição básica. Sempre ativo.</small></div>
+<label class="switch"><input type="checkbox" checked disabled><span class="sl"></span></label></div>
+<div class="opt"><div><strong>Publicidade personalizada</strong><small>Permitir anúncios e conteúdo adaptados a você.</small></div>
+<label class="switch"><input type="checkbox" id="cm-ads"><span class="sl"></span></label></div>
+<div class="btns" style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+<button class="reject" id="cm-cancel" type="button" style="padding:9px 16px;border-radius:10px;background:transparent;border:1px solid var(--line-soft);color:var(--muted);cursor:pointer">Cancelar</button>
+<button class="accept" id="cm-save" type="button" style="padding:9px 16px;border-radius:10px;background:var(--gold);border:1px solid var(--gold);color:#111;font-weight:700;cursor:pointer">Salvar</button>
+</div>
+</div>
+</div>
+<script src="/assets/js/consent.js" defer></script>
+<script src="/assets/js/main.js" defer></script>
+</body>
+</html>

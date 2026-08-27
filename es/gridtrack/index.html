@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+
+<meta name="description" content="Encuentra tu grid locator Maidenhead y calcula distancia y azimut entre localizadores. Herramienta de radioaficionado rápida y gratis de PU4FOS.">
+<link rel="canonical" href="https://pu4fos.github.io/es/gridtrack/">
+<link rel="alternate" hreflang="en" href="https://pu4fos.github.io/gridtrack/"><link rel="alternate" hreflang="pt-br" href="https://pu4fos.github.io/pt/gridtrack/"><link rel="alternate" hreflang="es" href="https://pu4fos.github.io/es/gridtrack/"><link rel="alternate" hreflang="x-default" href="https://pu4fos.github.io/gridtrack/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:type" content="website"><meta property="og:site_name" content="PU4FOS">
+<meta property="og:title" content="GridTrack — Localizador Maidenhead y Distancia | PU4FOS"><meta property="og:description" content="Encuentra tu grid locator Maidenhead y calcula distancia y azimut entre localizadores. Herramienta de radioaficionado rápida y gratis de PU4FOS.">
+<meta property="og:url" content="https://pu4fos.github.io/es/gridtrack/"><meta property="og:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="GridTrack — Localizador Maidenhead y Distancia | PU4FOS"><meta name="twitter:description" content="Encuentra tu grid locator Maidenhead y calcula distancia y azimut entre localizadores. Herramienta de radioaficionado rápida y gratis de PU4FOS.">
+<meta name="twitter:image" content="https://pu4fos.github.io/assets/img/logo.png">
+<link rel="icon" type="image/png" href="/assets/img/logo.png">
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('consent','default',{'ad_storage':'denied','ad_user_data':'denied','ad_personalization':'denied','analytics_storage':'granted','wait_for_update':2000});
+gtag('set','url_passthrough',true);gtag('set','ads_data_redaction',true);</script>
+<meta name="google-adsense-account" content="ca-pub-2979531486195420">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2979531486195420" crossorigin="anonymous"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-R2BSZ7PX74"></script>
+<script>gtag('js',new Date());gtag('config','G-R2BSZ7PX74');</script>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GridTrack — Localizador Maidenhead y Distancia | PU4FOS</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css" />
+<style>
+  :root{
+    --bg: #0b0e0f;
+    --panel: rgba(18,22,23,0.92);
+    --panel-border: rgba(255,255,255,0.08);
+    --ink: #e8eeee;
+    --ink-dim: #8fa1a1;
+    --accent: #3ddcc2;
+    --accent-dim: #2a8a78;
+    --qsl-green: #22c55e;
+    --qsl-yellow: #eab308;
+    --danger: #e5533d;
+    --mono: 'JetBrains Mono','Roboto Mono',ui-monospace,Menlo,monospace;
+    --sans: 'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font-family:var(--sans);overflow:hidden;}
+  #app{position:relative;width:100vw;height:100vh;height:100dvh;}
+  #map{position:absolute;inset:0;background:#0b0e0f;}
+
+  .leaflet-control-attribution{background:rgba(0,0,0,0.5)!important;color:var(--ink-dim)!important;font-size:9px;}
+  .leaflet-control-attribution a{color:var(--accent)!important;}
+
+  #topbar{
+    position:absolute; top:14px; left:14px; right:14px; z-index:1000;
+    display:flex; align-items:center; gap:10px; justify-content:space-between;
+    pointer-events:none;
+  }
+  #topbar .cluster{display:flex; align-items:center; gap:10px; pointer-events:auto;}
+  .brand{
+    font-family:var(--mono); font-size:13px; letter-spacing:.12em; color:var(--accent);
+    background:var(--panel); border:1px solid var(--panel-border); padding:9px 14px; border-radius:10px;
+    backdrop-filter: blur(8px);
+    text-transform:uppercase;
+  }
+  select#bandFilter{
+    background:var(--panel); color:var(--ink); border:1px solid var(--panel-border);
+    padding:9px 12px; border-radius:10px; font-family:var(--mono); font-size:12.5px;
+    backdrop-filter: blur(8px); cursor:pointer; outline:none; min-width:150px;
+    appearance:none; -webkit-appearance:none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%);
+    background-position: calc(100% - 16px) center, calc(100% - 11px) center;
+    background-size: 5px 5px, 5px 5px; background-repeat:no-repeat;
+  }
+  button.iconbtn{
+    background:var(--panel); border:1px solid var(--panel-border); color:var(--ink);
+    width:38px; height:38px; border-radius:10px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(8px); transition: all .15s ease;
+  }
+  button.iconbtn:hover{border-color:var(--accent); color:var(--accent);}
+  button.iconbtn svg{width:18px;height:18px;}
+
+  #gridToggle input{accent-color:var(--accent); width:15px;height:15px;cursor:pointer;}
+  #gridToggle.on{color:var(--accent);}
+
+  #basemaps{
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%); z-index:1000;
+    display:flex; gap:6px; background:var(--panel); border:1px solid var(--panel-border);
+    padding:6px; border-radius:12px; backdrop-filter: blur(8px);
+    bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  }
+  #basemaps button{
+    background:transparent; border:none; color:var(--ink-dim); font-family:var(--sans);
+    font-size:11.5px; padding:8px 16px; border-radius:8px; cursor:pointer; transition:all .15s ease;
+    letter-spacing:.02em;
+  }
+  #basemaps button.active{background:var(--accent); color:#04201a; font-weight:600;}
+  #basemaps button:hover:not(.active){color:var(--ink); background:rgba(255,255,255,0.06);}
+
+  #sidePanel{
+    position:absolute; top:70px; right:14px; z-index:1000;
+    background:var(--panel); border:1px solid var(--panel-border); border-radius:12px;
+    backdrop-filter: blur(8px); overflow:hidden; width:190px; transition: width .2s ease;
+  }
+  #sidePanel.collapsed{width:44px;}
+  #sideHeader{
+    display:flex; align-items:center; justify-content:space-between; padding:10px 12px;
+    cursor:pointer; border-bottom:1px solid var(--panel-border);
+  }
+  #sidePanel.collapsed #sideHeader{border-bottom:none;}
+  #sideHeader span{font-family:var(--mono); font-size:11px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.08em; white-space:nowrap; overflow:hidden;}
+  #sidePanel.collapsed #sideHeader span{opacity:0;}
+  #sideHeader svg{width:14px;height:14px; flex-shrink:0; color:var(--ink-dim); transition:transform .2s ease;}
+  #sidePanel.collapsed #sideHeader svg{transform:rotate(180deg);}
+  #sideBody{padding:12px; display:flex; flex-direction:column; gap:10px;}
+  #sidePanel.collapsed #sideBody{display:none;}
+  .filterRow{display:flex; align-items:center; gap:9px; font-size:12.5px; cursor:pointer; user-select:none;}
+  .filterRow input{width:15px;height:15px;cursor:pointer;}
+  .dot{width:10px;height:10px;border-radius:3px; flex-shrink:0;}
+  .dot.g{background:var(--qsl-green);}
+  .dot.y{background:var(--qsl-yellow);}
+  .stat{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); border-top:1px solid var(--panel-border); padding-top:9px; margin-top:2px;}
+
+  #overlay{position:absolute; inset:0; background:rgba(0,0,0,0.55); z-index:2000; display:none; align-items:center; justify-content:center; backdrop-filter: blur(2px);}
+  #overlay.show{display:flex;}
+
+  /* Mobile: encolhe/compacta os controles para caber na tela sem cortar
+     nada (a barra de camadas/base-maps não pode ficar oculta embaixo) */
+  @media (max-width: 480px), (max-height: 640px){
+    #topbar{ top:8px; left:8px; right:8px; gap:6px; flex-wrap:wrap; }
+    .brand{ padding:7px 10px; font-size:11px; }
+    select#bandFilter{ padding:7px 9px; font-size:11px; min-width:110px; }
+    button.iconbtn{ width:32px; height:32px; }
+    button.iconbtn svg{ width:15px; height:15px; }
+    #sidePanel{ top:56px; right:8px; width:160px; }
+    #sidePanel.collapsed{ width:38px; }
+    #sideBody{ padding:9px; gap:8px; }
+    .filterRow{ font-size:11.5px; }
+    .stat{ font-size:9.5px; }
+    #basemaps{ bottom: calc(10px + env(safe-area-inset-bottom, 0px)); padding:4px; gap:4px; }
+    #basemaps button{ padding:6px 11px; font-size:10.5px; }
+    #modal{ width:min(420px,92vw); padding:18px; }
+  }
+  #modal{
+    background:#12171a; border:1px solid var(--panel-border); border-radius:16px; width:min(420px,90vw);
+    padding:22px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); position:relative;
+  }
+  #modal h2{margin:0 0 4px; font-size:16px; font-family:var(--mono); color:var(--accent); letter-spacing:.04em;}
+  #logo-img{display:block; max-width:100%; max-height:110px; margin:0 auto 14px; object-fit:contain;}
+  #modal p.sub{margin:0 0 18px; font-size:12px; color:var(--ink-dim);}
+  .dropzone{
+    border:1.5px dashed var(--panel-border); border-radius:10px; padding:26px 10px; text-align:center;
+    color:var(--ink-dim); font-size:12.5px; cursor:pointer; transition:all .15s ease;
+  }
+  .dropzone:hover{border-color:var(--accent); color:var(--accent);}
+  .ghost-btn{
+    width:100%; background:transparent; color:var(--ink-dim); border:1px solid var(--panel-border);
+    padding:10px; border-radius:9px; font-size:12.5px; cursor:pointer; margin-top:14px;
+  }
+  .ghost-btn:hover{color:var(--danger); border-color:var(--danger);}
+  .msg{font-size:11.5px; margin-top:12px; font-family:var(--mono); line-height:1.5;}
+  .msg.ok{color:var(--qsl-green);}
+  .msg.err{color:var(--danger);}
+  .msg.info{color:var(--ink-dim);}
+
+  /* QSO grid labels (two lines, anchored to the grid cell) — sem balão,
+     texto solto com contorno escuro para ler bem sobre qualquer fundo */
+  .qsoLabel{
+    display:flex; flex-direction:column; align-items:center; line-height:1.15;
+    pointer-events:none;
+    text-shadow:
+      -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000,
+      0 0 4px rgba(0,0,0,0.85);
+  }
+  .qsoLabel .gname{font-family:var(--mono); font-weight:800; color:#ff7a1a; font-size:11px; letter-spacing:.02em;}
+  .qsoLabel .gcalls{font-family:var(--mono); font-weight:600; color:#ff7a1a; font-size:9px; opacity:.92;}
+
+  /* Remove o balão/caixa branca padrão do Leaflet no tooltip permanente dos
+     grids — deve sobrar só o texto (ver .qsoLabel acima) */
+  .leaflet-tooltip.qsoTooltip{
+    background:transparent !important;
+    border:none !important;
+    box-shadow:none !important;
+    padding:0 !important;
+    border-radius:0 !important;
+  }
+  .leaflet-tooltip.qsoTooltip::before{ display:none !important; }
+
+  /* plain maidenhead grid cell label (small) */
+  .cellLabel{
+    font-family:var(--mono); font-size:9px; color:var(--accent); opacity:.55;
+    pointer-events:none; white-space:nowrap;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="map"></div>
+
+  <div id="topbar">
+    <div class="cluster">
+      <div class="brand">Grid Track PU4FOS</div>
+      <select id="bandFilter"></select>
+    </div>
+    <div class="cluster">
+      <button class="iconbtn" id="settingsBtn" title="Ajustes">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="sidePanel">
+    <div id="sideHeader">
+      <span>filtro qsl</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+    <div id="sideBody">
+      <label class="filterRow"><input type="checkbox" id="showQsl" checked><span class="dot g"></span>Con QSL (LoTW)</label>
+      <label class="filterRow"><input type="checkbox" id="showNoQsl" checked><span class="dot y"></span>Sin QSL</label>
+      <label class="filterRow" id="gridToggle"><input type="checkbox" id="gridCheck"><span id="gridLabel">Rejilla Maidenhead</span></label>
+      <div class="stat" id="statCalls">Indicativos: 0</div>
+      <div class="stat" id="statQsos" style="border-top:none; padding-top:0; margin-top:-4px;">QSO: 0</div>
+      <div class="stat" id="statGrids" style="border-top:none; padding-top:0; margin-top:-4px;">GRIDS: 0</div>
+    </div>
+  </div>
+
+  <div id="basemaps">
+    <button data-layer="light" class="active">Claro</button>
+    <button data-layer="dark">Oscuro</button>
+    <button data-layer="sat">Satélite</button>
+  </div>
+
+  <div id="overlay">
+    <div id="modal">
+      <button class="iconbtn" id="modalClose" style="position:absolute; top:16px; right:16px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      <img id="logo-img" src="logo.png" alt="pu4fos bhmg" onerror="this.style.display='none'">
+      <h2>Ajustes</h2>
+      <p class="sub">Importa tus QSOs desde un archivo ADIF (descargado de LoTW o de tu logger).</p>
+      <div class="dropzone" id="dropzone">Haz clic para elegir un archivo .adi / .adif<br>o arrastra aquí</div>
+      <input type="file" id="adifFile" accept=".adi,.adif,.txt" style="display:none">
+      <div class="msg info" id="adifMsg"></div>
+      <button class="ghost-btn" id="clearData">Borrar todos los datos guardados</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Maidenhead helpers ---------- */
+  var GRIDCHARS = 'ABCDEFGHIJKLMNOPQR';
+  function toGrid4(lat, lon){
+    lon += 180; lat += 90;
+    var f1 = GRIDCHARS[Math.floor(lon/20)];
+    var f2 = GRIDCHARS[Math.floor(lat/10)];
+    var s1 = Math.floor((lon%20)/2);
+    var s2 = Math.floor((lat%10)/1);
+    return (f1+f2+s1+s2).toUpperCase();
+  }
+  function grid4Bounds(grid){
+    grid = grid.toUpperCase();
+    var lon = GRIDCHARS.indexOf(grid[0])*20 + parseInt(grid[2])*2 - 180;
+    var lat = GRIDCHARS.indexOf(grid[1])*10 + parseInt(grid[3])*1 - 90;
+    return [[lat, lon],[lat+1, lon+2]]; // [[south,west],[north,east]]
+  }
+
+  /* ---------- Map setup ---------- */
+  var map = L.map('map', {zoomControl:false, worldCopyJump:true, minZoom:2, maxZoom:12}).setView([15,0], 3);
+  L.control.zoom({position:'bottomright'}).addTo(map);
+
+  var basemaps = {
+    light: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors', subdomains:'abc', maxZoom:19}),
+    dark: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri', maxZoom:16}),
+    sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri', maxZoom:19})
+  };
+  var currentBase = 'light';
+  basemaps.light.addTo(map);
+
+  document.querySelectorAll('#basemaps button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      map.removeLayer(basemaps[currentBase]);
+      currentBase = btn.dataset.layer;
+      basemaps[currentBase].addTo(map);
+      document.querySelectorAll('#basemaps button').forEach(function(b){b.classList.remove('active');});
+      btn.classList.add('active');
+      saveSettings();
+    });
+  });
+
+  /* ---------- Maidenhead grid overlay (viewport-based, com labels em todo zoom) ---------- */
+  var gridLayer = L.layerGroup().addTo(map);
+  var gridCheck = document.getElementById('gridCheck');
+  var gridToggleEl = document.getElementById('gridToggle');
+  // Abaixo deste zoom, o grid de 4 dígitos (2°x1°, ~16k células no mundo)
+  // pesaria demais — em vez de sumir, a grade "resume" para o nível de campo
+  // (2 letras, 20°x10°, só 324 células no total = sempre leve) e volta pro
+  // nível detalhado assim que o usuário aproxima de novo.
+  var FIELD_ZOOM_THRESHOLD = 5;
+
+  function buildGrid(){
+    gridLayer.clearLayers();
+    if(!gridCheck.checked) return;
+    var zoom = map.getZoom();
+    if(zoom < FIELD_ZOOM_THRESHOLD) buildFieldGrid(); else buildCellGrid();
+  }
+
+  // Nível "campo": 18x18 = 324 retângulos cobrindo o mundo inteiro, leve o
+  // bastante pra desenhar sempre por completo (sem depender do viewport).
+  function buildFieldGrid(){
+    for(var loIdx=0; loIdx<18; loIdx++){
+      for(var laIdx=0; laIdx<18; laIdx++){
+        var lo = loIdx*20 - 180;
+        var la = laIdx*10 - 90;
+        var bounds = [[la,lo],[la+10,lo+20]];
+        L.rectangle(bounds, {color:'#3ddcc2', weight:0.6, opacity:0.4, fill:false, interactive:false}).addTo(gridLayer);
+        var code = GRIDCHARS[loIdx] + GRIDCHARS[laIdx];
+        var center = [la+5, lo+10];
+        L.marker(center, {
+          icon: L.divIcon({className:'', html:'<div class="cellLabel" style="font-size:13px;">'+code+'</div>', iconSize:[46,18], iconAnchor:[23,9]}),
+          interactive:false
+        }).addTo(gridLayer);
+      }
+    }
+  }
+
+  // Nível "célula" (4 dígitos): só a área visível do mapa, com o código
+  // completo do grid centralizado em cada quadrado.
+  function buildCellGrid(){
+    var b = map.getBounds().pad(0.3);
+    var west = Math.max(-180, Math.floor((b.getWest()+180)/2)*2 - 180);
+    var east = Math.min(180, Math.ceil((b.getEast()+180)/2)*2 - 180);
+    var south = Math.max(-90, Math.floor(b.getSouth()+90) - 90);
+    var north = Math.min(90, Math.ceil(b.getNorth()+90) - 90);
+
+    for(var lo=west; lo<east; lo+=2){
+      for(var la=south; la<north; la+=1){
+        var cellBounds = [[la,lo],[la+1,lo+2]];
+        L.rectangle(cellBounds, {color:'#3ddcc2', weight:0.5, opacity:0.4, fill:false, interactive:false}).addTo(gridLayer);
+        var code = toGrid4(la+0.5, lo+0.5);
+        var center = [la+0.5, lo+1];
+        L.marker(center, {
+          icon: L.divIcon({className:'', html:'<div class="cellLabel">'+code+'</div>', iconSize:[40,14], iconAnchor:[20,7]}),
+          interactive:false
+        }).addTo(gridLayer);
+      }
+    }
+  }
+
+  gridCheck.addEventListener('change', function(){
+    if(gridCheck.checked){ gridToggleEl.classList.add('on'); }
+    else { gridToggleEl.classList.remove('on'); }
+    buildGrid();
+    saveSettings();
+  });
+  map.on('moveend zoomend', function(){ if(gridCheck.checked) buildGrid(); });
+
+  /* ---------- QSO squares layer ---------- */
+  var qsoLayer = L.layerGroup().addTo(map);
+
+  /* ---------- Data model ----------
+     qsos is a flat array of individual contacts: {call, grid, band, qsl, sat, satname, date, time}.
+     Importing appends to whatever is already stored, so repeat imports keep summing. */
+  var STORE_KEY = 'gridlog_qsos_v3';
+  var SETTINGS_KEY = 'gridlog_settings_v1';
+  var qsos = [];
+
+  function loadData(){
+    try{ qsos = JSON.parse(localStorage.getItem(STORE_KEY)) || []; }catch(e){ qsos = []; }
+    try{
+      var s = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+      if(s.grid === true){ gridCheck.checked=true; gridToggleEl.classList.add('on'); }
+      if(s.showQsl === false) document.getElementById('showQsl').checked=false;
+      if(s.showNoQsl === false) document.getElementById('showNoQsl').checked=false;
+      if(s.band) document.getElementById('bandFilter').value = s.band;
+      if(s.basemap && basemaps[s.basemap]){
+        map.removeLayer(basemaps[currentBase]);
+        currentBase = s.basemap; basemaps[currentBase].addTo(map);
+        document.querySelectorAll('#basemaps button').forEach(function(b){ b.classList.toggle('active', b.dataset.layer===currentBase); });
+      }
+    }catch(e){}
+  }
+  function saveData(){ localStorage.setItem(STORE_KEY, JSON.stringify(qsos)); }
+  function saveSettings(){
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+      grid: gridCheck.checked,
+      showQsl: document.getElementById('showQsl').checked,
+      showNoQsl: document.getElementById('showNoQsl').checked,
+      band: document.getElementById('bandFilter').value,
+      basemap: currentBase
+    }));
+  }
+
+  /* ---------- Bands (LoTW pattern) + SAT (checked via PROP_MODE/PROPAGATION field) ---------- */
+  var BANDS = ['Todas','2190m','630m','560m','160m','80m','60m','40m','30m','20m','17m','15m','12m','10m','6m','4m','2m','1.25m','70cm','33cm','23cm','13cm','9cm','6cm','3cm','1.25cm','SAT'];
+  var bandSel = document.getElementById('bandFilter');
+  BANDS.forEach(function(b){
+    var o = document.createElement('option'); o.value = (b==='Todas'?'ALL':b.toUpperCase()); o.textContent = b; bandSel.appendChild(o);
+  });
+  bandSel.addEventListener('change', function(){ saveSettings(); render(); });
+
+  /* ---------- ADIF parsing ---------- */
+  var ADIF_FIELD_RE = /<([a-zA-Z_0-9]+):(\d+)(?::[^>]+)?>/g;
+  function parseAdifRecord(rec){
+    var fields = {};
+    // IMPORTANT: use a fresh lastIndex (or a fresh regex) per record — a shared
+    // 'g' regex carries its lastIndex across calls, which silently corrupts
+    // field extraction on every record after the first.
+    ADIF_FIELD_RE.lastIndex = 0;
+    var m;
+    while((m = ADIF_FIELD_RE.exec(rec)) !== null){
+      var name = m[1].toUpperCase();
+      var len = parseInt(m[2], 10);
+      var start = m.index + m[0].length;
+      var val = rec.substring(start, start + len);
+      fields[name] = val.trim();
+      ADIF_FIELD_RE.lastIndex = start + len;
+    }
+    return fields;
+  }
+
+  function parseAdif(text){
+    var records = text.split(/<eor>/i);
+    var out = [];
+    records.forEach(function(rec){
+      if(!rec.trim()) return;
+      var fields = parseAdifRecord(rec);
+      // Quando o QSO está na fronteira de dois grids, o LoTW NÃO emite o
+      // campo GRIDSQUARE — ele é substituído por VUCC_GRIDS. Por isso o
+      // registro precisa ser aceito mesmo sem GRIDSQUARE, desde que tenha
+      // VUCC_GRIDS.
+      if(!fields.CALL || (!fields.GRIDSQUARE && !fields.VUCC_GRIDS)) return;
+
+      var qslYes = (fields.LOTW_QSL_RCVD || fields.QSL_RCVD || '').toUpperCase() === 'Y';
+      var propField = (fields.PROP_MODE || fields.PROPAGATION || '').toUpperCase();
+      var isSat = propField === 'SAT' || propField === 'SATELLITE';
+      var band = (fields.BAND || '').toUpperCase();
+      var call = fields.CALL;
+
+      // VUCC_GRIDS é uma lista separada por vírgula dos grids do QSO
+      // (ex: "GG53,GG52") e, quando presente, é a referência oficial —
+      // substitui GRIDSQUARE em vez de somar a ele.
+      var gridSet = {};
+      if(fields.VUCC_GRIDS){
+        fields.VUCC_GRIDS.split(',').forEach(function(gv){
+          gv = gv.trim();
+          if(gv.length >= 4) gridSet[gv.substring(0,4).toUpperCase()] = true;
+        });
+      } else if(fields.GRIDSQUARE){
+        gridSet[fields.GRIDSQUARE.substring(0,4).toUpperCase()] = true;
+      }
+      var grids = Object.keys(gridSet);
+      if(!grids.length) return;
+
+      grids.forEach(function(g){
+        out.push({
+          call: call, grid: g, band: band, qsl: qslYes, sat: isSat,
+          satname: fields.SAT_NAME || '',
+          date: fields.QSO_DATE || '',
+          time: fields.TIME_ON || fields.TIME_OFF || ''
+        });
+      });
+    });
+    return out;
+  }
+
+  // Cada novo ADIF importado substitui completamente os dados anteriores
+  // (não soma) — evita duplicar QSOs ao reimportar um relatório do LoTW.
+  function mergeQsos(newOnes){
+    qsos = newOnes;
+    saveData();
+  }
+
+  function formatDateTime(date, time){
+    var d = '';
+    if(date && date.length === 8) d = date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6,8);
+    var t = '';
+    if(time && time.length >= 4) t = time.slice(0,2)+':'+time.slice(2,4)+'z';
+    if(!d && !t) return '';
+    return (d+' '+t).trim();
+  }
+
+  /* ---------- Render QSO grid squares ---------- */
+  function render(){
+    qsoLayer.clearLayers();
+    var band = bandSel.value;
+    var showQsl = document.getElementById('showQsl').checked;
+    var showNoQsl = document.getElementById('showNoQsl').checked;
+
+    var byGrid = {};
+    var visibleCalls = {};
+    var visibleQsoTotal = 0;
+
+    qsos.forEach(function(q){
+      if(band === 'SAT'){
+        if(!q.sat) return;
+      } else if(band !== 'ALL'){
+        if(q.band !== band) return;
+      }
+      if(q.qsl && !showQsl) return;
+      if(!q.qsl && !showNoQsl) return;
+
+      visibleQsoTotal += 1;
+      visibleCalls[q.call] = true;
+
+      if(!byGrid[q.grid]) byGrid[q.grid] = {records:[], qsl:false};
+      byGrid[q.grid].records.push(q);
+      if(q.qsl) byGrid[q.grid].qsl = true;
+    });
+
+    var gridCount = 0;
+    var greenColor = getComputedStyle(document.documentElement).getPropertyValue('--qsl-green').trim();
+    var yellowColor = getComputedStyle(document.documentElement).getPropertyValue('--qsl-yellow').trim();
+
+    Object.keys(byGrid).forEach(function(g){
+      gridCount++;
+      var b = grid4Bounds(g);
+      var records = byGrid[g].records;
+      var color = byGrid[g].qsl ? greenColor : yellowColor;
+      var rect = L.rectangle(b, {
+        color: color, weight:1, opacity:0.6,
+        fillColor: color, fillOpacity: 0.5, interactive:true
+      }).addTo(qsoLayer);
+
+      // O rótulo mostra só o indicativo do QSO mais antigo daquele grid
+      // (por data/hora), não a lista de indicativos.
+      var oldest = records[0];
+      records.forEach(function(r){
+        var key = (r.date || '99999999') + (r.time || '999999');
+        var oldestKey = (oldest.date || '99999999') + (oldest.time || '999999');
+        if(key < oldestKey) oldest = r;
+      });
+      var callsText = oldest.call;
+      var html = '<div class="qsoLabel"><div class="gname">'+g+'</div><div class="gcalls">'+callsText+'</div></div>';
+      rect.bindTooltip(html, {permanent:true, direction:'center', className:'qsoTooltip', opacity:1, interactive:false});
+
+      // Agrupa por indicativo: conta os QSOs de cada um e junta, numa só
+      // linha, os satélites usados (ou as bandas, quando não é satélite).
+      var byCall = {};
+      var callOrder = [];
+      records.forEach(function(r){
+        if(!byCall[r.call]){ byCall[r.call] = {count:0, labels:[], labelSet:{}}; callOrder.push(r.call); }
+        var entry = byCall[r.call];
+        entry.count++;
+        var label = r.sat ? (r.satname || 'Satélite') : (r.band || '—');
+        if(!entry.labelSet[label]){ entry.labelSet[label] = true; entry.labels.push(label); }
+      });
+
+      var popup = '<div class="popupGrid">'+g+'</div>';
+      callOrder.forEach(function(call){
+        var entry = byCall[call];
+        popup += '<div class="popupCall"><b>'+call+'</b>'+(entry.count>1 ? ' ('+entry.count+')' : '')+'</div>';
+        popup += '<div class="popupLine">'+entry.labels.join(', ')+'</div>';
+      });
+      rect.bindPopup(popup, {className:'gridPopup'});
+    });
+
+    document.getElementById('statCalls').textContent = 'Indicativos: ' + Object.keys(visibleCalls).length;
+    document.getElementById('statQsos').textContent = 'QSO: ' + visibleQsoTotal;
+    document.getElementById('statGrids').textContent = 'GRIDS: ' + gridCount;
+    updateLabelScale();
+  }
+
+  document.getElementById('showQsl').addEventListener('change', function(){ saveSettings(); render(); });
+  document.getElementById('showNoQsl').addEventListener('change', function(){ saveSettings(); render(); });
+
+  /* ---------- Side panel collapse ---------- */
+  var sidePanel = document.getElementById('sidePanel');
+  document.getElementById('sideHeader').addEventListener('click', function(){
+    sidePanel.classList.toggle('collapsed');
+  });
+
+  /* ---------- Settings modal ---------- */
+  var overlay = document.getElementById('overlay');
+  document.getElementById('settingsBtn').addEventListener('click', function(){ overlay.classList.add('show'); });
+  document.getElementById('modalClose').addEventListener('click', function(){ overlay.classList.remove('show'); });
+  overlay.addEventListener('click', function(e){ if(e.target === overlay) overlay.classList.remove('show'); });
+
+  var dropzone = document.getElementById('dropzone');
+  var adifFile = document.getElementById('adifFile');
+  dropzone.addEventListener('click', function(){ adifFile.click(); });
+  dropzone.addEventListener('dragover', function(e){ e.preventDefault(); dropzone.style.borderColor='var(--accent)'; });
+  dropzone.addEventListener('dragleave', function(){ dropzone.style.borderColor=''; });
+  dropzone.addEventListener('drop', function(e){
+    e.preventDefault(); dropzone.style.borderColor='';
+    if(e.dataTransfer.files.length) handleAdifFile(e.dataTransfer.files[0]);
+  });
+  adifFile.addEventListener('change', function(){
+    if(adifFile.files.length) handleAdifFile(adifFile.files[0]);
+  });
+  function handleAdifFile(file){
+    var msg = document.getElementById('adifMsg');
+    msg.textContent = 'Lendo arquivo...'; msg.className='msg info';
+    var reader = new FileReader();
+    reader.onload = function(e){
+      try{
+        var parsed = parseAdif(e.target.result);
+        if(!parsed.length){
+          msg.textContent = 'Nenhum QSO com CALL e GRIDSQUARE/VUCC_GRIDS encontrado no arquivo.';
+          msg.className='msg err';
+          return;
+        }
+        mergeQsos(parsed);
+        render();
+        msg.textContent = parsed.length + ' QSOs importados com sucesso.';
+        msg.className='msg ok';
+      }catch(err){
+        msg.textContent = 'Erro ao processar ADIF: ' + err.message;
+        msg.className='msg err';
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById('clearData').addEventListener('click', function(){
+    if(confirm('¿Borrar todos los QSOs y ajustes guardados localmente?')){
+      localStorage.removeItem(STORE_KEY);
+      localStorage.removeItem(SETTINGS_KEY);
+      qsos = {};
+      render();
+    }
+  });
+
+  /* ---------- Dynamic label scaling: labels must shrink/grow with the grid
+     cell's on-screen size, otherwise at low zoom they overflow the square ---------- */
+  var dynStyleTag = document.createElement('style');
+  dynStyleTag.id = 'dynLabelStyle';
+  document.head.appendChild(dynStyleTag);
+
+  function cellPixelSize(){
+    var z = map.getZoom();
+    var c = map.getCenter();
+    var p1 = map.project([c.lat, c.lng], z);
+    var p2 = map.project([c.lat, c.lng + 2], z);
+    var p3 = map.project([c.lat + 1, c.lng], z);
+    var w = Math.abs(p2.x - p1.x);
+    var h = Math.abs(p3.y - p1.y);
+    return Math.min(w, h);
+  }
+
+  function updateLabelScale(){
+    var px = cellPixelSize();
+    // O rótulo nunca deve sumir — só encolher junto com o tamanho do
+    // quadrado do grid na tela, até um tamanho mínimo ainda legível.
+    var big = Math.max(4, Math.min(13, px * 0.16)).toFixed(1);
+    var small = Math.max(3.5, Math.min(10, px * 0.11)).toFixed(1);
+    dynStyleTag.textContent =
+      '.qsoLabel{display:flex;}' +
+      '.gname{font-size:' + big + 'px;}' +
+      '.gcalls{font-size:' + small + 'px;}';
+  }
+  map.on('zoom', updateLabelScale);
+  map.on('zoomend', updateLabelScale);
+
+  /* ---------- Init ---------- */
+  loadData();
+  buildGrid();
+  render();
+})();
+</script>
+
+<a href="/es/" title="PU4FOS" style="position:fixed;left:10px;bottom:10px;z-index:99998;display:flex;align-items:center;gap:6px;background:rgba(9,9,9,.86);border:1px solid rgba(212,175,55,.55);color:#f0d472;padding:6px 11px;border-radius:10px;font:600 12px/1 system-ui,sans-serif;text-decoration:none;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)">Inicio</a>
+<style>
+#consent{position:fixed;left:0;right:0;bottom:0;z-index:100000;display:none;background:#0c0c0c;border-top:1px solid rgba(212,175,55,.5);box-shadow:0 -12px 40px rgba(0,0,0,.6);font:400 14px/1.5 system-ui,sans-serif;color:#b7b7b7}
+#consent.show{display:block}
+#consent .cw{max-width:1080px;margin:0 auto;padding:16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+#consent p{margin:0;flex:1;min-width:240px}#consent a{color:#f0d472}
+#consent .btns{display:flex;gap:8px}
+#consent button{padding:9px 16px;border-radius:9px;font:700 13px system-ui;cursor:pointer;border:1px solid rgba(212,175,55,.25)}
+#consent .accept{background:#d4af37;border-color:#d4af37;color:#111}#consent .reject{background:transparent;color:#b7b7b7}
+.consent-modal{position:fixed;inset:0;z-index:100001;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.7)}
+.consent-modal.show{display:flex}.consent-modal .box{background:#0e0e0e;border:1px solid rgba(212,175,55,.4);border-radius:16px;max-width:440px;width:100%;padding:22px;color:#f2f2f2;font:400 14px/1.5 system-ui}
+.consent-modal h3{margin:0 0 12px;color:#fff4c8}.consent-modal .opt{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.consent-modal small{color:#8b8b8b;display:block}.consent-modal .mbtns{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.consent-modal button{padding:9px 15px;border-radius:9px;cursor:pointer;font:700 13px system-ui}
+.switch{position:relative;width:44px;height:24px;flex:0 0 auto}.switch input{opacity:0;width:0;height:0}
+.switch .sl{position:absolute;inset:0;background:#333;border-radius:999px;cursor:pointer}.switch .sl::before{content:"";position:absolute;left:3px;top:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.2s}
+.switch input:checked+.sl{background:#d4af37}.switch input:checked+.sl::before{transform:translateX(20px)}.switch input:disabled+.sl{opacity:.5}
+</style>
+<div id="consent" role="dialog" aria-label="Cookies"><div class="cw">
+<p>Usamos cookies para analítica y anuncios. La analítica y los anuncios no personalizados funcionan igual; aceptar añade personalización. <a href="/es/privacy/">Privacidad</a>.</p>
+<div class="btns"><button class="reject" id="consent-manage" type="button" style="background:transparent;color:#f0d472;border-color:rgba(212,175,55,.4)">⚙</button>
+<button class="reject" id="consent-reject" type="button">Rechazar</button>
+<button class="accept" id="consent-accept" type="button">Aceptar</button></div>
+</div></div>
+<div class="consent-modal" id="consent-modal" role="dialog" aria-modal="true"><div class="box">
+<h3>Privacidad</h3>
+<div class="opt"><div><strong>Necesario</strong><small>Sitio y medición básica.</small></div><label class="switch"><input type="checkbox" checked disabled><span class="sl"></span></label></div>
+<div class="opt"><div><strong>Anuncios personalizados</strong><small>Anuncios adaptados a ti.</small></div><label class="switch"><input type="checkbox" id="cm-ads"><span class="sl"></span></label></div>
+<div class="mbtns"><button id="cm-cancel" type="button" style="background:transparent;border:1px solid rgba(212,175,55,.25);color:#b7b7b7">Rechazar</button>
+<button id="cm-save" type="button" style="background:#d4af37;border:1px solid #d4af37;color:#111">Aceptar</button></div>
+</div></div>
+<script src="/assets/js/consent.js" defer></script>
+</body>
+</html>
