@@ -229,9 +229,13 @@
   L.control.zoom({position: isMobile ? 'bottomleft' : 'topleft'}).addTo(map);
 
   /* ---- Camadas ---- */
-  const layers = {
-    escuro:   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+  /*
+escuro:   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
                 {maxZoom:19, subdomains:'abcd', attribution:'&copy; OpenStreetMap &copy; CARTO'}),
+  */
+  const layers = {
+    escuro:   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                {attribution:'Tiles &copy; Esri', maxZoom:16}),
     ruas:     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
                 {maxZoom:19, attribution:'&copy; OpenStreetMap contributors'}),
     satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
