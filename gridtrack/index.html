@@ -203,6 +203,7 @@
 
   <div id="basemaps">
     <button data-layer="light" class="active">Claro</button>
+    <button data-layer="dark">Escuro</button>
     <button data-layer="sat">Satélite</button>
   </div>
 
@@ -248,6 +249,7 @@
 
   var basemaps = {
     light: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap contributors', subdomains:'abc', maxZoom:19}),
+    dark: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri', maxZoom:16}),
     sat: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'Tiles &copy; Esri', maxZoom:19})
   };
   var currentBase = 'light';
@@ -264,27 +266,45 @@
     });
   });
 
-  /* ---------- Maidenhead grid overlay (viewport-based, with small labels) ---------- */
+  /* ---------- Maidenhead grid overlay (viewport-based, com labels em todo zoom) ---------- */
   var gridLayer = L.layerGroup().addTo(map);
   var gridCheck = document.getElementById('gridCheck');
   var gridToggleEl = document.getElementById('gridToggle');
-  var LABEL_ZOOM_THRESHOLD = 4; // below this, no grid lines at all (too dense/heavy)
-  var CELL_TEXT_ZOOM_THRESHOLD = 6; // texto do grid vazio só aparece com zoom mais aproximado
+  // Abaixo deste zoom, o grid de 4 dígitos (2°x1°, ~16k células no mundo)
+  // pesaria demais — em vez de sumir, a grade "resume" para o nível de campo
+  // (2 letras, 20°x10°, só 324 células no total = sempre leve) e volta pro
+  // nível detalhado assim que o usuário aproxima de novo.
+  var FIELD_ZOOM_THRESHOLD = 5;
 
   function buildGrid(){
     gridLayer.clearLayers();
     if(!gridCheck.checked) return;
-
     var zoom = map.getZoom();
+    if(zoom < FIELD_ZOOM_THRESHOLD) buildFieldGrid(); else buildCellGrid();
+  }
 
-    // Zoom muito afastado: as linhas da grade cobrindo o mundo inteiro
-    // pesam muito em memória/desempenho (principalmente no celular), então
-    // elas simplesmente somem nesse nível — só reaparecem ao aproximar.
-    if(zoom < LABEL_ZOOM_THRESHOLD) return;
+  // Nível "campo": 18x18 = 324 retângulos cobrindo o mundo inteiro, leve o
+  // bastante pra desenhar sempre por completo (sem depender do viewport).
+  function buildFieldGrid(){
+    for(var loIdx=0; loIdx<18; loIdx++){
+      for(var laIdx=0; laIdx<18; laIdx++){
+        var lo = loIdx*20 - 180;
+        var la = laIdx*10 - 90;
+        var bounds = [[la,lo],[la+10,lo+20]];
+        L.rectangle(bounds, {color:'#3ddcc2', weight:0.6, opacity:0.4, fill:false, interactive:false}).addTo(gridLayer);
+        var code = GRIDCHARS[loIdx] + GRIDCHARS[laIdx];
+        var center = [la+5, lo+10];
+        L.marker(center, {
+          icon: L.divIcon({className:'', html:'<div class="cellLabel" style="font-size:13px;">'+code+'</div>', iconSize:[46,18], iconAnchor:[23,9]}),
+          interactive:false
+        }).addTo(gridLayer);
+      }
+    }
+  }
 
-    var showText = zoom >= CELL_TEXT_ZOOM_THRESHOLD;
-
-    // Zoomed in enough: draw only cells within current viewport, each with a small centered label
+  // Nível "célula" (4 dígitos): só a área visível do mapa, com o código
+  // completo do grid centralizado em cada quadrado.
+  function buildCellGrid(){
     var b = map.getBounds().pad(0.3);
     var west = Math.max(-180, Math.floor((b.getWest()+180)/2)*2 - 180);
     var east = Math.min(180, Math.ceil((b.getEast()+180)/2)*2 - 180);
@@ -295,20 +315,15 @@
       for(var la=south; la<north; la+=1){
         var cellBounds = [[la,lo],[la+1,lo+2]];
         L.rectangle(cellBounds, {color:'#3ddcc2', weight:0.5, opacity:0.4, fill:false, interactive:false}).addTo(gridLayer);
-        // O texto do código do grid vazio (sem QSO) só aparece com o zoom
-        // mais aproximado — em zoom afastado só fica a linha do quadrado.
-        if(showText){
-          var code = toGrid4(la+0.5, lo+0.5);
-          var center = [la+0.5, lo+1];
-          L.marker(center, {
-            icon: L.divIcon({className:'', html:'<div class="cellLabel">'+code+'</div>', iconSize:[40,14], iconAnchor:[20,7]}),
-            interactive:false
-          }).addTo(gridLayer);
-        }
+        var code = toGrid4(la+0.5, lo+0.5);
+        var center = [la+0.5, lo+1];
+        L.marker(center, {
+          icon: L.divIcon({className:'', html:'<div class="cellLabel">'+code+'</div>', iconSize:[40,14], iconAnchor:[20,7]}),
+          interactive:false
+        }).addTo(gridLayer);
       }
     }
   }
-
 
   gridCheck.addEventListener('change', function(){
     if(gridCheck.checked){ gridToggleEl.classList.add('on'); }
